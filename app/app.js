@@ -542,16 +542,19 @@
   }
 
   async function saveNow() {
+    clearTimeout(saveTimer)
     try {
       if (!window.qestimaDesktop) localStorage.setItem("qestima-v6", JSON.stringify(state))
       const result = window.qestimaDesktop ? await window.qestimaDesktop.saveData(state) : { savedAt: new Date().toISOString() }
       $("#save-dot")?.classList.remove("saving")
       if ($("#save-label")) $("#save-label").textContent = "محفوظ"
       if ($("#save-time")) $("#save-time").textContent = `آخر حفظ ${new Date(result.savedAt).toLocaleTimeString("ar-SA", { hour: "2-digit", minute: "2-digit" })}`
+      return true
     } catch (error) {
       $("#save-dot")?.classList.remove("saving")
       if ($("#save-label")) $("#save-label").textContent = "تعذر الحفظ"
       toast("تعذر حفظ البيانات", error.message, "error")
+      return false
     }
   }
 
@@ -3893,7 +3896,8 @@
       state.auth.securityMode = "commercial"; state.auth.firstRunCompletedAt = now
       state.session = { ...(state.session || {}), userId, authenticated: false }
       state.user = { name: state.users[0].name, initials: state.users[0].initials }
-      scheduleSave(); renderLogin(); toast("تم إنشاء حساب المدير", "سجّل الدخول بالحساب الجديد.")
+      if (!(await saveNow())) return
+      renderLogin(); toast("تم إنشاء حساب المدير", "سجّل الدخول بالحساب الجديد.")
       return
     }
     if (!(form instanceof HTMLFormElement)) return

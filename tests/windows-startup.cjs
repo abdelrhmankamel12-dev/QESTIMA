@@ -47,6 +47,13 @@ async function main() {
       scope: 'Startup smoke test only; not full application acceptance', timestamp: new Date().toISOString()
     }, null, 2))
   } catch (error) {
+    if (app) {
+      const pages = app.windows()
+      if (pages.length) {
+        await pages[0].screenshot({ path: 'artifacts/windows-failure.png', fullPage: true }).catch(() => {})
+        fs.writeFileSync('artifacts/windows-failure-text.txt', await pages[0].locator('body').innerText().catch(() => 'Unavailable'))
+      }
+    }
     fs.writeFileSync('artifacts/windows-startup-error.txt', String(error.stack || error))
     throw error
   } finally { if (app) await app.close() }
