@@ -98,7 +98,7 @@ test("runtime staging embeds an official runtime and source without making an in
   try {
     const electronDist = path.join(folder, "electron"); const output = path.join(folder, "staging")
     fs.mkdirSync(electronDist); fs.writeFileSync(path.join(electronDist, "electron"), "runtime"); fs.writeFileSync(path.join(electronDist, "resources.pak"), "pak"); fs.writeFileSync(path.join(electronDist, "icudtl.dat"), "icu")
-    const result = stageRuntime({ electronDist, outputDir: output, sourceRoot: path.resolve(__dirname, ".."), electronVersion: "37.2.6" })
+    const result = stageRuntime({ electronDist, outputDir: output, sourceRoot: path.resolve(__dirname, ".."), electronVersion: "37.2.6", targetPlatform: "linux" })
     assert.equal(result.manifest.format, "qestima-embedded-runtime"); assert.equal(fs.existsSync(path.join(output, "QESTIMA")), true); assert.equal(fs.existsSync(path.join(output, "resources", "app", "electron", "main.cjs")), true); assert.equal(fs.existsSync(path.join(output, "runtime-manifest.json")), true); assert.equal(verifyRuntimeManifest(output).ok, true)
   } finally { fs.rmSync(folder, { recursive: true, force: true }) }
 })
@@ -144,13 +144,13 @@ test("release preflight simulates install, upgrade and rollback without creating
   try {
     const electronDist = path.join(folder, "electron"); const sourceRoot = path.resolve(__dirname, ".."); const staging = path.join(folder, "staging")
     fs.mkdirSync(electronDist); fs.writeFileSync(path.join(electronDist, "electron"), "runtime-v1"); fs.writeFileSync(path.join(electronDist, "resources.pak"), "pak"); fs.writeFileSync(path.join(electronDist, "icudtl.dat"), "icu")
-    stageRuntime({ electronDist, outputDir: staging, sourceRoot, electronVersion: "37.2.6" })
+    stageRuntime({ electronDist, outputDir: staging, sourceRoot, electronVersion: "37.2.6", targetPlatform: "linux" })
     assert.equal(validateRuntimeCandidate(staging, { expectedAppVersion: "0.13.0" }).ok, true)
     const installDir = path.join(folder, "installed"); const first = installStagedRuntime({ staging, installDir, expectedAppVersion: "0.13.0" })
     assert.equal(fs.existsSync(path.join(installDir, "resources", "app", "electron", "main.cjs")), true); assert.equal(first.backupDir, null)
     fs.writeFileSync(path.join(installDir, "user-data-marker.txt"), "outside-data-is-not-in-program-folder")
     fs.writeFileSync(path.join(electronDist, "electron"), "runtime-v2"); const upgradedStaging = path.join(folder, "staging-v2")
-    stageRuntime({ electronDist, outputDir: upgradedStaging, sourceRoot, electronVersion: "37.2.6" })
+    stageRuntime({ electronDist, outputDir: upgradedStaging, sourceRoot, electronVersion: "37.2.6", targetPlatform: "linux" })
     const upgraded = upgradeStagedRuntime({ staging: upgradedStaging, installDir, expectedAppVersion: "0.13.0" })
     assert.ok(upgraded.backupDir); assert.equal(fs.existsSync(path.join(upgraded.backupDir, "user-data-marker.txt")), true)
     const recovered = recoverInstalledRuntime({ installDir, backupDir: upgraded.backupDir }); assert.equal(recovered.ok, true); assert.equal(fs.existsSync(path.join(installDir, "user-data-marker.txt")), true)
