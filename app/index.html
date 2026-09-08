@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' blob: data:; connect-src 'self'; worker-src 'self' blob:" />
+    <title>QESTIMA — MEP Estimating System</title>
+    <link rel="icon" href="brand.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <svg class="svg-sprite" aria-hidden="true">
+      <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
+      <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 6.5h6l2 2h10v9.5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 8.5V6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v.5"/></symbol>
+      <symbol id="i-table" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 9v11M15 9v11"/></symbol>
+      <symbol id="i-calculator" viewBox="0 0 24 24"><rect x="5" y="2.5" width="14" height="19" rx="2"/><path d="M8 6h8v3H8zM8 13h.01M12 13h.01M16 13h.01M8 17h.01M12 17h.01M16 17h.01"/></symbol>
+      <symbol id="i-library" viewBox="0 0 24 24"><path d="M4 19.5V5a2 2 0 0 1 2-2h3v18H6a2 2 0 0 1-2-1.5zM9 5h5v16H9zM14 7l4-1 3 14-4 .9z"/></symbol>
+      <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+      <symbol id="i-percent" viewBox="0 0 24 24"><path d="M19 5 5 19M7 5a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM17 15a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></symbol>
+      <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></symbol>
+      <symbol id="i-report" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8M8 9h2"/></symbol>
+      <symbol id="i-ruler" viewBox="0 0 24 24"><path d="m3 17 14-14 4 4L7 21H3z"/><path d="m14 6 4 4M11 9l2 2M8 12l2 2M5 15l2 2"/></symbol>
+      <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+      <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+      <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.1-1.1"/></symbol>
+      <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></symbol>
+      <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></symbol>
+      <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41"/></symbol>
+      <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></symbol>
+      <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 6 6v2"/></symbol>
+      <symbol id="i-redo" viewBox="0 0 24 24"><path d="m15 14 5-5-5-5"/><path d="M20 9H10a6 6 0 0 0-6 6v2"/></symbol>
+      <symbol id="i-save" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></symbol>
+      <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+      <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+      <symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.3 2.8 1.8 18a2 2 0 0 0 1.8 3h16.8a2 2 0 0 0 1.8-3L13.7 2.8a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+      <symbol id="i-filter" viewBox="0 0 24 24"><path d="M4 5h16l-6 7v5l-4 2v-7z"/></symbol>
+      <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></symbol>
+      <symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4z"/></symbol>
+      <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 15H6L5 6M10 11v6M14 11v6"/></symbol>
+      <symbol id="i-attach" viewBox="0 0 24 24"><path d="m21.4 11.6-8.5 8.5a6 6 0 0 1-8.5-8.5l9-9a4 4 0 0 1 5.7 5.7l-9 9a2 2 0 1 1-2.8-2.8l8.3-8.3"/></symbol>
+      <symbol id="i-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></symbol>
+      <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></symbol>
+      <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></symbol>
+      <symbol id="i-unlock" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 7.5-2M12 14v3"/></symbol>
+    </svg>
+
+    <div id="loading-screen" class="loading-screen">
+      <div class="loading-logo">Q</div>
+      <h1>QESTIMA</h1>
+      <p>جاري تحميل نظام التسعير…</p>
+      <span class="loader"></span>
+    </div>
+
+    <div id="login-screen" class="login-screen hidden" aria-label="QESTIMA sign in"></div>
+
+    <div id="app-shell" class="app-shell hidden">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">Q</div>
+          <div><strong>QESTIMA</strong><span>Professional Estimating</span></div>
+        </div>
+
+        <div class="workspace-mini">
+          <span class="eyebrow">WORKSPACE</span>
+          <select id="workspace-switcher" aria-label="مساحة العمل"></select>
+          <small id="workspace-mode">Personal · Local</small>
+        </div>
+
+        <div class="project-mini">
+          <span class="eyebrow">المشروع الحالي</span>
+          <select id="project-switcher" aria-label="المشروع الحالي"></select>
+          <div class="project-progress"><span id="sidebar-progress-bar"></span></div>
+          <small id="sidebar-progress-text">0% مكتمل</small>
+        </div>
+
+        <nav id="main-nav" class="main-nav">
+          <span class="nav-section">PROJECT</span>
+          <button data-view="projects" class="active"><svg><use href="#i-folder"/></svg><span>Projects Center</span></button>
+          <button data-view="dashboard"><svg><use href="#i-grid"/></svg><span>Project Overview</span></button>
+          <span class="nav-section">TENDER</span>
+          <button data-view="documents"><svg><use href="#i-attach"/></svg><span>Tender Documents</span><b id="nav-documents">0</b></button>
+          <button data-view="tender_review"><svg><use href="#i-check"/></svg><span>Tender Review</span><em id="nav-review-state">ناقص</em></button>
+          <button data-view="scope"><svg><use href="#i-filter"/></svg><span>Scope &amp; Systems</span></button>
+          <span class="nav-section">ESTIMATING</span>
+          <button data-view="boq"><svg><use href="#i-table"/></svg><span>BOQ Pricing Sheet</span><b id="nav-unpriced">0</b></button>
+          <button data-view="quantity_review"><svg><use href="#i-ruler"/></svg><span>Quantity Review</span></button>
+          <button data-view="drawings"><svg><use href="#i-ruler"/></svg><span>Drawings &amp; Takeoff</span></button>
+          <button data-view="models"><svg><use href="#i-link"/></svg><span>IFC &amp; Model Mapping</span></button>
+          <button data-view="analysis"><svg><use href="#i-calculator"/></svg><span>Unit Rate Analysis</span></button>
+          <button data-view="resources"><svg><use href="#i-library"/></svg><span>Resource Library</span></button>
+          <button data-view="suppliers"><svg><use href="#i-users"/></svg><span>RFQs &amp; Quotations</span></button>
+          <button data-view="markup"><svg><use href="#i-percent"/></svg><span>Pricing &amp; Markup</span></button>
+          <span class="nav-section">CONTROL</span>
+          <button data-view="control"><svg><use href="#i-grid"/></svg><span>Tender Control Center</span></button>
+          <button data-view="risks"><svg><use href="#i-alert"/></svg><span>Clarifications &amp; Risks</span><b id="nav-risks">0</b></button>
+          <button data-view="quality"><svg><use href="#i-check"/></svg><span>Quality &amp; Submission</span></button>
+          <button data-view="decisions"><svg><use href="#i-percent"/></svg><span>What-If &amp; Target</span></button>
+          <button data-view="reports"><svg><use href="#i-report"/></svg><span>Reports</span></button>
+          <button data-view="revisions"><svg><use href="#i-history"/></svg><span>Revisions</span></button>
+          <button data-view="owner_portal"><svg><use href="#i-users"/></svg><span>Owner Portal</span></button>
+          <button data-action="report-problem"><svg><use href="#i-alert"/></svg><span>Report a Problem</span></button>
+        </nav>
+
+        <div class="sidebar-foot">
+          <div class="save-state"><span id="save-dot"></span><div><strong id="save-label">محفوظ</strong><small id="save-time">تلقائيًا على جهازك</small></div></div>
+          <span class="version">Tender Operating System · v0.13.0</span>
+        </div>
+      </aside>
+
+      <section class="main-area">
+        <header class="topbar">
+          <div class="breadcrumb"><span>QESTIMA</span><svg><use href="#i-chevron"/></svg><strong id="page-title">لوحة المشروع</strong></div>
+          <div class="top-actions">
+            <label class="global-search"><svg><use href="#i-search"/></svg><input id="global-search" placeholder="ابحث عن بند، مورد أو سعر…" /></label>
+            <button id="undo-btn" class="icon-btn" title="تراجع"><svg><use href="#i-undo"/></svg></button>
+            <button id="redo-btn" class="icon-btn" title="إعادة"><svg><use href="#i-redo"/></svg></button>
+            <button id="theme-btn" class="icon-btn" title="الوضع الليلي"><svg><use href="#i-moon"/></svg></button>
+            <button id="backup-btn" class="secondary-btn"><svg><use href="#i-save"/></svg>Backup</button>
+            <button class="secondary-btn layout-button" data-action="toggle-navigator">Navigator</button>
+            <button class="secondary-btn layout-button" data-action="toggle-inspector">Properties</button>
+            <div id="license-indicator" class="license-indicator"></div>
+            <button class="ghost-btn logout-btn" data-action="logout">تسجيل الخروج</button>
+            <div class="user-chip"><span id="user-initials">QS</span><div><strong id="user-name">مدير التسعير</strong><small>صلاحية كاملة</small></div></div>
+          </div>
+        </header>
+
+        <nav id="ribbon-tabs" class="ribbon-tabs no-print" role="tablist" aria-label="QESTIMA modules">
+          <button id="ribbon-tab-file" class="ribbon-tab file-tab" role="tab" aria-selected="false" aria-controls="ribbon-panel-file" data-action="ribbon-tab" data-tab="file">File</button>
+          <button id="ribbon-tab-home" class="ribbon-tab active" role="tab" aria-selected="true" aria-controls="ribbon-panel-home" data-action="ribbon-tab" data-tab="home">Home</button>
+          <button id="ribbon-tab-drawings" class="ribbon-tab" role="tab" aria-selected="false" aria-controls="ribbon-panel-drawings" data-action="ribbon-tab" data-tab="drawings">Drawings</button>
+          <button id="ribbon-tab-dimensions" class="ribbon-tab" role="tab" aria-selected="false" aria-controls="ribbon-panel-dimensions" data-action="ribbon-tab" data-tab="dimensions">Dimensions</button>
+          <button id="ribbon-tab-revisions" class="ribbon-tab" role="tab" aria-selected="false" aria-controls="ribbon-panel-revisions" data-action="ribbon-tab" data-tab="revisions">Revisions</button>
+          <button id="ribbon-tab-cost-estimation" class="ribbon-tab" role="tab" aria-selected="false" aria-controls="ribbon-panel-cost-estimation" data-action="ribbon-tab" data-tab="cost_estimation">Cost Estimation</button>
+          <button id="ribbon-tab-suppliers" class="ribbon-tab" role="tab" aria-selected="false" aria-controls="ribbon-panel-suppliers" data-action="ribbon-tab" data-tab="suppliers">Suppliers</button>
+          <button id="ribbon-tab-intelligence" class="ribbon-tab intelligence-tab" role="tab" aria-selected="false" aria-controls="ribbon-panel-intelligence" data-action="ribbon-tab" data-tab="intelligence">Intelligence</button>
+          <button id="ribbon-tab-reports" class="ribbon-tab" role="tab" aria-selected="false" aria-controls="ribbon-panel-reports" data-action="ribbon-tab" data-tab="reports">Reports</button>
+          <button id="ribbon-tab-admin" class="ribbon-tab admin-tab" role="tab" aria-selected="false" aria-controls="ribbon-panel-admin" data-action="ribbon-tab" data-tab="admin">⚙ Administration</button>
+        </nav>
+
+        <div id="ribbon-stack" class="ribbon-stack no-print">
+          <nav id="contextual-tabs" class="contextual-tabs" role="tablist" aria-label="Contextual tools" hidden></nav>
+          <div id="command-ribbon" class="command-ribbon">
+          <section id="ribbon-panel-home" class="ribbon-panel active" role="tabpanel" aria-labelledby="ribbon-tab-home" data-ribbon-panel="home">
+            <div class="ribbon-group"><span>Project</span><div><button data-view="projects"><svg><use href="#i-folder"/></svg><b>Projects</b></button><button data-action="edit-current-project"><svg><use href="#i-edit"/></svg><b>Project Data</b></button><button data-action="save-revision"><svg><use href="#i-history"/></svg><b>Save Revision</b></button></div></div>
+            <div class="ribbon-group"><span>BOQ &amp; Pricing</span><div><button data-action="open-import"><svg><use href="#i-upload"/></svg><b>Import Excel</b></button><button data-action="add-boq"><svg><use href="#i-plus"/></svg><b>Add Item</b></button><button data-view="boq"><svg><use href="#i-table"/></svg><b>Pricing Sheet</b></button><button data-action="toggle-inspector"><svg><use href="#i-calculator"/></svg><b>Rate Inspector</b></button></div></div>
+            <div class="ribbon-group"><span>Review</span><div><button data-view="control"><svg><use href="#i-grid"/></svg><b>Control Center</b></button><button data-view="quality"><svg><use href="#i-check"/></svg><b>Quality Gate</b></button><button data-view="reports"><svg><use href="#i-report"/></svg><b>Reports</b></button></div></div>
+          </section>
+          <section id="ribbon-panel-file" class="ribbon-panel" role="tabpanel" aria-labelledby="ribbon-tab-file" data-ribbon-panel="file">
+            <div class="ribbon-group"><span>Project File</span><div><button data-action="new-project"><svg><use href="#i-plus"/></svg><b>New Project</b></button><button data-action="backup"><svg><use href="#i-save"/></svg><b>Backup / Restore</b></button><button data-action="save-revision"><svg><use href="#i-history"/></svg><b>Save Revision</b></button></div></div>
+            <div class="ribbon-group"><span>Exchange</span><div><button data-action="open-import"><svg><use href="#i-upload"/></svg><b>Import BOQ</b></button><button data-view="reports"><svg><use href="#i-download"/></svg><b>Export Reports</b></button><button data-action="report-problem"><svg><use href="#i-alert"/></svg><b>Report a Problem</b></button></div></div>
+          </section>
+          <section id="ribbon-panel-drawings" class="ribbon-panel" role="tabpanel" aria-labelledby="ribbon-tab-drawings" data-ribbon-panel="drawings">
+            <div class="ribbon-group"><span>Import</span><div><button data-action="upload-tender-files"><svg><use href="#i-upload"/></svg><b>PDF</b></button><button data-action="import-cad-document" data-format="DXF" title="ASCII DXF layer and geometry index"><svg><use href="#i-upload"/></svg><b>DXF</b></button><button class="ribbon-disabled" disabled title="Native DWG requires an approved converter or licensed CAD SDK." data-action="ribbon-unavailable"><svg><use href="#i-upload"/></svg><b>DWG</b></button><button data-action="import-ifc-model"><svg><use href="#i-link"/></svg><b>IFC</b></button></div></div>
+            <div class="ribbon-group"><span>Drawing</span><div><button data-view="drawings"><svg><use href="#i-ruler"/></svg><b>Open</b></button><button data-action="close-drawing"><svg><use href="#i-x"/></svg><b>Close</b></button><button data-action="drawing-properties"><svg><use href="#i-edit"/></svg><b>Properties</b></button></div></div>
+            <div class="ribbon-group"><span>View</span><div><button data-action="drawing-zoom-in"><svg><use href="#i-plus"/></svg><b>Zoom</b></button><button class="ribbon-disabled" disabled title="Pan will be enabled with the full canvas navigation engine." data-action="ribbon-unavailable"><svg><use href="#i-ruler"/></svg><b>Pan</b></button><button data-action="drawing-fit"><svg><use href="#i-grid"/></svg><b>Fit</b></button><button class="ribbon-disabled" disabled title="Rotate is staged for the next PDF canvas engine." data-action="ribbon-unavailable"><svg><use href="#i-history"/></svg><b>Rotate</b></button></div></div>
+            <div class="ribbon-group"><span>Layers</span><div><button class="ribbon-disabled" disabled title="PDF layers are not available until the DXF/DWG layer engine is enabled." data-action="ribbon-unavailable"><svg><use href="#i-check"/></svg><b>Show</b></button><button class="ribbon-disabled" disabled title="PDF layers are not available until the DXF/DWG layer engine is enabled." data-action="ribbon-unavailable"><svg><use href="#i-x"/></svg><b>Hide</b></button><button class="ribbon-disabled" disabled title="PDF layers are not available until the DXF/DWG layer engine is enabled." data-action="ribbon-unavailable"><svg><use href="#i-filter"/></svg><b>Filter</b></button></div></div>
+            <div class="ribbon-group"><span>Scale</span><div><button data-action="calibrate-scale"><svg><use href="#i-ruler"/></svg><b>Calibrate</b></button><button data-action="change-scale-units"><svg><use href="#i-edit"/></svg><b>Units</b></button></div></div>
+            <div class="ribbon-group"><span>Revisions</span><div><button data-action="upload-tender-files"><svg><use href="#i-plus"/></svg><b>Add Revision</b></button><button data-action="compare-document-revisions"><svg><use href="#i-history"/></svg><b>Compare</b></button><button data-action="toggle-drawing-overlay"><svg><use href="#i-grid"/></svg><b>Overlay</b></button></div></div>
+            <div class="ribbon-group"><span>Model Review</span><div><button data-view="models"><svg><use href="#i-link"/></svg><b>Model Mapping</b></button><button data-action="compare-ifc-revisions"><svg><use href="#i-history"/></svg><b>IFC Compare</b></button><button data-view="quantity_review"><svg><use href="#i-check"/></svg><b>Quantity Review</b></button></div></div>
+          </section>
+          <section id="ribbon-panel-dimensions" class="ribbon-panel" role="tabpanel" aria-labelledby="ribbon-tab-dimensions" data-ribbon-panel="dimensions">
+            <div class="ribbon-group"><span>Measuring</span><div><button data-action="measure-length"><svg><use href="#i-ruler"/></svg><b>Length</b></button><button data-action="measure-area"><svg><use href="#i-grid"/></svg><b>Area</b></button><button data-action="measure-perimeter"><b>Perimeter</b></button><button data-action="measure-count"><svg><use href="#i-plus"/></svg><b>Count</b></button><button data-view="quantity_review"><svg><use href="#i-check"/></svg><b>Review</b></button></div></div>
+            <div class="ribbon-group"><span>Dimension Groups</span><div><button data-action="add-measurement"><svg><use href="#i-plus"/></svg><b>New Group</b></button><button data-view="drawings"><svg><use href="#i-table"/></svg><b>Dimension View</b></button><button data-view="boq"><svg><use href="#i-link"/></svg><b>Link to BOQ</b></button></div></div>
+          </section>
+          <section id="ribbon-panel-revisions" class="ribbon-panel" role="tabpanel" aria-labelledby="ribbon-tab-revisions" data-ribbon-panel="revisions">
+            <div class="ribbon-group"><span>Version Control</span><div><button data-view="revisions"><svg><use href="#i-history"/></svg><b>Revision Manager</b></button><button data-action="save-revision"><svg><use href="#i-save"/></svg><b>Save Snapshot</b></button><button data-action="revision-impact"><svg><use href="#i-alert"/></svg><b>Impact Check</b></button></div></div>
+          </section>
+          <section id="ribbon-panel-cost-estimation" class="ribbon-panel" role="tabpanel" aria-labelledby="ribbon-tab-cost-estimation" data-ribbon-panel="cost_estimation">
+            <div class="ribbon-group"><span>BOQ</span><div><button data-view="boq"><svg><use href="#i-table"/></svg><b>BOQ Workbook</b></button><button data-action="add-boq"><svg><use href="#i-plus"/></svg><b>Add Item</b></button><button data-action="open-import"><svg><use href="#i-upload"/></svg><b>Import</b></button><button data-view="boq"><svg><use href="#i-edit"/></svg><b>Item Details</b></button></div></div>
+            <div class="ribbon-group"><span>Rate Build-Up</span><div><button data-view="analysis"><svg><use href="#i-calculator"/></svg><b>New Analysis</b></button><button data-action="copy-analysis"><svg><use href="#i-copy"/></svg><b>Copy Analysis</b></button><button data-action="open-rate-assembly"><svg><use href="#i-library"/></svg><b>Rate Assembly</b></button><button data-action="recalculate-analysis"><svg><use href="#i-calculator"/></svg><b>Recalculate</b></button></div></div>
+            <div class="ribbon-group"><span>Resources</span><div><button data-action="resource-filter" data-type="material"><svg><use href="#i-library"/></svg><b>Material</b></button><button data-action="resource-filter" data-type="labor"><svg><use href="#i-users"/></svg><b>Labor</b></button><button data-action="resource-filter" data-type="equipment"><svg><use href="#i-grid"/></svg><b>Equipment</b></button><button data-action="resource-filter" data-type="subcontractor"><svg><use href="#i-users"/></svg><b>Subcontractor</b></button></div></div>
+            <div class="ribbon-group"><span>Productivity</span><div><button data-action="open-productivity"><svg><use href="#i-users"/></svg><b>Crew</b></button><button data-action="open-productivity"><svg><use href="#i-grid"/></svg><b>Output / Day</b></button><button data-action="open-productivity"><svg><use href="#i-clock"/></svg><b>Manhours</b></button><button data-action="open-productivity"><svg><use href="#i-calculator"/></svg><b>Equipment Hours</b></button></div></div>
+            <div class="ribbon-group"><span>Indirect Cost</span><div><button data-view="markup"><svg><use href="#i-calculator"/></svg><b>Site Overhead</b></button><button data-view="markup"><svg><use href="#i-calculator"/></svg><b>Head Office</b></button><button data-view="markup"><svg><use href="#i-upload"/></svg><b>Mobilization</b></button><button data-view="markup"><svg><use href="#i-grid"/></svg><b>Temporary Works</b></button></div></div>
+            <div class="ribbon-group"><span>Pricing</span><div><button data-view="analysis"><svg><use href="#i-percent"/></svg><b>Waste</b></button><button data-view="analysis"><svg><use href="#i-upload"/></svg><b>Transport</b></button><button data-view="markup"><svg><use href="#i-percent"/></svg><b>Escalation</b></button><button data-view="markup"><svg><use href="#i-alert"/></svg><b>Contingency</b></button></div></div>
+            <div class="ribbon-group"><span>Selling Price</span><div><button data-view="markup"><svg><use href="#i-percent"/></svg><b>Profit</b></button><button data-view="markup"><svg><use href="#i-percent"/></svg><b>Markup</b></button><button data-view="markup"><svg><use href="#i-percent"/></svg><b>Discount</b></button><button data-view="markup"><svg><use href="#i-percent"/></svg><b>VAT</b></button><button data-view="markup"><svg><use href="#i-target"/></svg><b>Final Adjustment</b></button></div></div>
+            <div class="ribbon-group"><span>Scenarios</span><div><button data-view="markup"><svg><use href="#i-grid"/></svg><b>Conservative</b></button><button data-view="markup"><svg><use href="#i-grid"/></svg><b>Competitive</b></button><button data-view="markup"><svg><use href="#i-target"/></svg><b>Target</b></button><button data-view="markup"><svg><use href="#i-lock"/></svg><b>Management Final</b></button></div></div>
+            <div class="ribbon-group"><span>Review</span><div><button data-action="show-unpriced"><svg><use href="#i-alert"/></svg><b>Unpriced Items</b></button><button data-view="quality"><svg><use href="#i-alert"/></svg><b>Rate Errors</b></button><button data-view="quality"><svg><use href="#i-alert"/></svg><b>Outliers</b></button><button data-view="quality"><svg><use href="#i-check"/></svg><b>Quality Check</b></button></div></div>
+            <div class="ribbon-group"><span>History</span><div><button data-view="boq"><svg><use href="#i-history"/></svg><b>Previous Rates</b></button><button data-view="boq"><svg><use href="#i-search"/></svg><b>Similar Items</b></button><button data-view="resources"><svg><use href="#i-history"/></svg><b>Price Updates</b></button></div></div>
+            <div class="ribbon-group"><span>Outputs</span><div><button data-view="reports"><svg><use href="#i-report"/></svg><b>Estimate Summary</b></button><button data-view="reports"><svg><use href="#i-calculator"/></svg><b>Rate Analysis</b></button><button data-view="reports"><svg><use href="#i-grid"/></svg><b>Cost Breakdown</b></button></div></div>
+          </section>
+          <section id="ribbon-panel-suppliers" class="ribbon-panel" role="tabpanel" aria-labelledby="ribbon-tab-suppliers" data-ribbon-panel="suppliers">
+            <div class="ribbon-group"><span>Procurement</span><div><button data-view="suppliers"><svg><use href="#i-users"/></svg><b>RFQs &amp; Quotes</b></button><button data-action="add-supplier"><svg><use href="#i-plus"/></svg><b>New Supplier</b></button><button data-action="add-rfq"><svg><use href="#i-upload"/></svg><b>Create RFQ</b></button></div></div>
+            <div class="ribbon-group"><span>Commercial</span><div><button data-view="markup"><svg><use href="#i-percent"/></svg><b>Markup</b></button><button data-view="decisions"><svg><use href="#i-grid"/></svg><b>What-If</b></button></div></div>
+          </section>
+          <section id="ribbon-panel-intelligence" class="ribbon-panel" role="tabpanel" aria-labelledby="ribbon-tab-intelligence" data-ribbon-panel="intelligence">
+            <div class="ribbon-group"><span>Estimating Intelligence</span><div><button data-action="open-import"><svg><use href="#i-upload"/></svg><b>Smart BOQ Import</b></button><button data-view="boq"><svg><use href="#i-search"/></svg><b>Historical Match</b></button><button data-view="analysis"><svg><use href="#i-calculator"/></svg><b>Rate Assemblies</b></button></div></div>
+            <div class="ribbon-group"><span>Control &amp; Scenarios</span><div><button data-view="quality"><svg><use href="#i-check"/></svg><b>Quality Checker</b></button><button data-action="revision-impact"><svg><use href="#i-alert"/></svg><b>Revision Impact</b></button><button data-view="decisions"><svg><use href="#i-percent"/></svg><b>What-If</b></button><button data-view="suppliers"><svg><use href="#i-users"/></svg><b>Bid Leveling</b></button></div></div>
+          </section>
+          <section id="ribbon-panel-reports" class="ribbon-panel" role="tabpanel" aria-labelledby="ribbon-tab-reports" data-ribbon-panel="reports">
+            <div class="ribbon-group"><span>Report Center</span><div><button data-view="reports"><svg><use href="#i-report"/></svg><b>Report Center</b></button><button data-action="export-report-pack"><svg><use href="#i-download"/></svg><b>Submission Pack</b></button><button data-action="export-report-excel"><svg><use href="#i-download"/></svg><b>Export Excel</b></button></div></div>
+            <div class="ribbon-group"><span>Review Outputs</span><div><button data-view="quality"><svg><use href="#i-check"/></svg><b>Quality Gate</b></button><button data-view="revisions"><svg><use href="#i-history"/></svg><b>Revision Impact</b></button><button data-view="risks"><svg><use href="#i-alert"/></svg><b>Risks &amp; Gaps</b></button></div></div>
+          </section>
+          <section id="ribbon-panel-admin" class="ribbon-panel" role="tabpanel" aria-labelledby="ribbon-tab-admin" data-ribbon-panel="admin">
+            <div class="ribbon-group"><span>Administration</span><div><button data-action="backup"><svg><use href="#i-save"/></svg><b>Backup &amp; Restore</b></button><button data-action="report-problem"><svg><use href="#i-alert"/></svg><b>Diagnostics</b></button><button data-view="control"><svg><use href="#i-users"/></svg><b>Team Control</b></button></div></div>
+            <div class="ribbon-group"><span>Company</span><div><button data-view="owner_portal"><svg><use href="#i-users"/></svg><b>Owner Portal</b></button><button data-action="register-device"><svg><use href="#i-link"/></svg><b>Register Device</b></button><button data-action="central-health"><svg><use href="#i-check"/></svg><b>Check Central API</b></button></div></div>
+          </section>
+          </div>
+          <div id="contextual-command-ribbon" class="contextual-command-ribbon" hidden aria-live="polite"></div>
+        </div>
+
+        <div id="workspace-tabs" class="workspace-tabs"></div>
+        <main id="workspace" class="workspace" tabindex="-1"></main>
+        <footer class="statusbar">
+          <div><span id="status-project-code">—</span><span id="status-pricing">BOQ 0%</span><span id="status-review">Tender Review 0%</span></div>
+          <div><span id="status-currency">SAR</span><span id="status-unpriced">0 Unpriced</span><span id="status-save">Ready</span></div>
+        </footer>
+      </section>
+    </div>
+
+    <div id="modal-root"></div>
+    <div id="toast-root" class="toast-root" aria-live="polite"></div>
+
+    <script src="vendor/xlsx.full.min.js"></script>
+    <script src="core.js"></script>
+    <script src="collaboration.js"></script>
+    <script src="ifc.js"></script>
+    <link rel="stylesheet" href="workbench.css" />
+    <script src="auth.js"></script>
+    <script src="pdf-reader.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
