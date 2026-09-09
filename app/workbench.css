@@ -50,3 +50,7 @@
 .boq-intelligence-strip small { font-size: 11px; }
 .boq-intelligence-title { min-width: 170px; }
 .boq-intelligence-stat { min-width: 95px; }
+.open-edition #ribbon-tab-admin,
+.open-edition [data-command-id="assign-user"],
+.open-edition [data-command-id="sync-now"],
+.open-edition .boq-intelligence-actions { display: none !important; }

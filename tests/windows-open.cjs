@@ -17,6 +17,7 @@ async function main() {
     assert.equal(await page.locator('#login-screen:visible').count(), 0)
     assert.equal(await page.locator('[data-action=reactivate-license]:visible').count(), 0)
     assert.equal(await page.locator('#main-nav [data-view=owner_portal]:visible').count(), 0)
+    assert.equal(await page.locator('#ribbon-tab-admin:visible').count(), 0)
     await page.locator('#workspace button[data-action=new-project]').first().click()
     await page.locator('#project-form [name=name]').fill('Open edition project')
     await page.locator('button[form=project-form]').click()

@@ -439,6 +439,7 @@
 
   function featureEnabled(feature) {
     if (!feature) return true
+    if (state.settings.openEdition) return !["owner.portal", "central.sync", "updates", "cad.dwg"].includes(feature)
     const aliases = { "ifc.import": "ifcImport", "owner.portal": "ownerPortal", "central.sync": "centralSync", "cad.dxf": "dxfImport", "cad.dwg": "nativeDwg" }
     const flags = activeFeatureFlags()
     const key = aliases[feature] || feature
@@ -700,7 +701,7 @@
       if (label) { const span = button.querySelector("span"); if (span) span.textContent = label }
     })
     $$("#main-nav .nav-section").forEach((node, index) => { node.textContent = ["١ · المشروع", "٢ · المستندات", "٣ · الحصر والتسعير", "٤ · المراجعة والتسليم"][index] || "" })
-    $$('#main-nav [data-action="report-problem"], [data-action="logout"], [data-action="reactivate-license"], [data-ribbon-tab="administration"]').forEach(button => { button.hidden = true })
+    $$('#main-nav [data-action="report-problem"], [data-action="logout"], [data-action="reactivate-license"], #ribbon-tab-admin').forEach(button => { button.hidden = true })
   }
 
   function renderShell() {
