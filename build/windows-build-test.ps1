@@ -16,5 +16,5 @@ if (-not $installer.WaitForExit(120000)) { $installer.Kill(); throw 'Installer t
 if ($installer.ExitCode -ne 0) { throw "Installer failed: $($installer.ExitCode)" }
 $installedExe = Join-Path $testInstall 'QESTIMA.exe'
 if (-not (Test-Path $installedExe)) { throw 'Installed executable is missing' }
-node tests/windows-startup.cjs $installedExe
+node tests/windows-open.cjs $installedExe
 if ($LASTEXITCODE -ne 0) { throw 'Installed app startup or persistence test failed' }

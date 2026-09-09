@@ -40,3 +40,13 @@
   .user-chip { display: none; }
 }
 @media print { .layout-button { display: none; } }
+.open-edition #login-screen, .open-edition .logout-btn,
+.open-edition .user-chip, .open-edition [data-view="owner_portal"],
+.open-edition [data-action="reactivate-license"] { display: none !important; }
+.open-edition-label { padding: 6px 10px; font-size: 12px; color: #087e78; background: #e6f7f3; border-radius: 6px; white-space: nowrap; }
+.main-nav button { min-height: 38px; font-size: 13px; }
+.main-nav .nav-section { font-size: 11px; padding-top: 16px; }
+.boq-intelligence-strip { max-height: 100px; min-height: 0 !important; padding: 10px !important; }
+.boq-intelligence-strip small { font-size: 11px; }
+.boq-intelligence-title { min-width: 170px; }
+.boq-intelligence-stat { min-width: 95px; }

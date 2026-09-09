@@ -153,6 +153,7 @@
   }
 
   function licenseEntitlements(license = {}, now = new Date()) {
+    if (license.activationMode === "open") return { active: true, expired: false, readOnly: false, graceDays: 0, graceAt: "", maxUsers: 1, maxDevices: Infinity, featureFlags: { ...defaultFeatureFlags(), ...(license.featureFlags || {}) }, status: "active" }
     const startsAt = new Date(license.startsAt || 0)
     const expiresAt = new Date(license.expiresAt || 0)
     const validStart = Number.isFinite(startsAt.getTime()) ? startsAt : null

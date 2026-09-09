@@ -6,7 +6,7 @@ SetCompressor /SOLID lzma
 !include "FileFunc.nsh"
 
 !define APP_NAME "QESTIMA"
-!define APP_VERSION "0.13.0"
+!define APP_VERSION "0.14.0"
 !define APP_PUBLISHER "QESTIMA"
 !define APP_REGKEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\QESTIMA"
 
@@ -14,7 +14,7 @@ SetCompressor /SOLID lzma
 ; deliberately labelled as an unsigned preview so an unsigned binary can
 ; never be mistaken for a commercially signed distribution.
 !ifndef QESTIMA_OUTFILE
-  !define QESTIMA_OUTFILE "..\release\QESTIMA-Setup-0.13.0-win-x64-Preview-Unsigned.exe"
+  !define QESTIMA_OUTFILE "..\release\QESTIMA-Setup-0.14.0-win-x64-Preview-Unsigned.exe"
 !endif
 
 Name "${APP_NAME} ${APP_VERSION}"
@@ -28,12 +28,12 @@ BrandingText "QESTIMA · Professional MEP Estimating"
 ShowInstDetails show
 ShowUninstDetails show
 
-VIProductVersion "0.13.0.0"
+VIProductVersion "0.14.0.0"
 VIAddVersionKey /LANG=1033 "ProductName" "QESTIMA Professional Workspace"
 VIAddVersionKey /LANG=1033 "CompanyName" "QESTIMA"
 VIAddVersionKey /LANG=1033 "FileDescription" "QESTIMA Universal Windows Installer"
-VIAddVersionKey /LANG=1033 "FileVersion" "0.13.0"
-VIAddVersionKey /LANG=1033 "ProductVersion" "0.13.0"
+VIAddVersionKey /LANG=1033 "FileVersion" "0.14.0"
+VIAddVersionKey /LANG=1033 "ProductVersion" "0.14.0"
 VIAddVersionKey /LANG=1033 "LegalCopyright" "Copyright 2026 QESTIMA"
 
 !define MUI_ABORTWARNING

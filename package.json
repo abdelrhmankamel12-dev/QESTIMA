@@ -1,6 +1,6 @@
 {
   "name": "qestima-universal",
-  "version": "0.13.0",
+  "version": "0.14.0",
   "description": "QESTIMA Tender Operating System - universal Windows MEP tender intelligence and estimating application.",
   "private": true,
   "scripts": {

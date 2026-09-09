@@ -690,7 +690,21 @@
     })
   }
 
+  function renderOpenNavigation() {
+    if (!state.settings.openEdition) return
+    document.body?.classList.add("open-edition")
+    const labels = { projects: "المشروعات", documents: "مستندات المناقصة", tender_review: "مراجعة المتطلبات", boq: "جدول الكميات والتسعير", quantity_review: "مراجعة الكميات", drawings: "الرسومات والحصر", analysis: "تحليل الأسعار", resources: "مكتبة الموارد", suppliers: "عروض الموردين", markup: "الإضافات والربح", quality: "المراجعة النهائية", reports: "التقارير والتصدير" }
+    $$("#main-nav [data-view]").forEach(button => {
+      const label = labels[button.dataset.view]
+      button.hidden = !label
+      if (label) { const span = button.querySelector("span"); if (span) span.textContent = label }
+    })
+    $$("#main-nav .nav-section").forEach((node, index) => { node.textContent = ["١ · المشروع", "٢ · المستندات", "٣ · الحصر والتسعير", "٤ · المراجعة والتسليم"][index] || "" })
+    $$('#main-nav [data-action="report-problem"], [data-action="logout"], [data-action="reactivate-license"], [data-ribbon-tab="administration"]').forEach(button => { button.hidden = true })
+  }
+
   function renderShell() {
+    renderOpenNavigation()
     const project = currentProject()
     const health = C.projectHealth(project, state.resources)
     const tender = C.tenderHealth(project, state.resources)
@@ -2881,6 +2895,7 @@
   function renderLicenseIndicator() {
     const element = $("#license-indicator")
     if (!element || !state) return
+    if (state.settings.openEdition) { element.innerHTML = '<span class="open-edition-label">نسخة مفتوحة · تخزين محلي</span>'; return }
     const license = C.licenseStatus(state)
     const tone = license.expired ? "expired" : license.expiringSoon ? "warning" : "active"
     const label = license.expired ? "License expired" : `${license.plan || "Preview"} · ${license.daysLeft ?? "—"} days`
@@ -2980,6 +2995,7 @@
   }
 
   function logout() {
+    if (state.settings.openEdition) return
     isAuthenticated = false
     authMessage = ""
     if (state?.session) state.session.authenticated = false
@@ -4250,11 +4266,13 @@
       return
     }
     state = raw ? C.ensureState(raw) : C.createInitialState()
+    C.prepareOpenEdition(state)
     if (window.qestimaDesktop?.commercialBuild && state.license?.activationMode === "signed") {
       const checked = await window.qestimaDesktop.verifyLicenseToken(state.license.licenseToken)
       if (!checked?.ok) state.license.status = "expired"
     }
     if (Collab.ensureCollaborationState) state = Collab.ensureCollaborationState(state)
+    C.prepareOpenEdition(state)
     reportLanguage = state.settings.language === "en" ? "en" : "ar"
     if (window.qestimaDesktop?.commercialBuild && !state.auth?.firstRunCompletedAt && (state.auth?.accounts || []).every((account) => account.username === "admin")) {
       state.auth.accounts = []
@@ -4296,7 +4314,15 @@
     })
     window.addEventListener("beforeunload", () => { persistUiState(); if (!window.qestimaDesktop) localStorage.setItem("qestima-v6", JSON.stringify(state)) })
     const loginSurface = $("#login-screen")
-    if (loginSurface) {
+    if (state.settings.openEdition) {
+      isAuthenticated = true
+      activeView = "projects"
+      activeRibbonTab = "home"
+      openTabs = [activeView]
+      loginSurface?.classList.add("hidden")
+      $("#app-shell")?.classList.remove("hidden")
+      render()
+    } else if (loginSurface) {
       isAuthenticated = false
       state.session.authenticated = false
       loginSurface.classList.remove("hidden")
@@ -4312,7 +4338,7 @@
     }
     $("#loading-screen").classList.add("hidden")
     scheduleSave()
-    startCentralSyncTimer()
+    if (!state.settings.openEdition) startCentralSyncTimer()
     if (migratedLegacy && isAuthenticated) setTimeout(() => toast("تم ترحيل بيانات النسخة القديمة", "المشاريع والأسعار السابقة أصبحت داخل QESTIMA.", "success"), 300)
   }
 

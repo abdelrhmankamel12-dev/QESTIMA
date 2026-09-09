@@ -15,7 +15,7 @@ const PdfEngine = require("../electron/pdf-engine.cjs")
 
 function fakeApp(folder) { return { getPath(name) { assert.equal(name, "userData"); return folder } } }
 function sampleState() {
-  return { schemaVersion: 6, appVersion: "0.13.0", projects: [{ id: "project-1", tenantId: "tenant-company-pilot", workspaceId: "company", name: "Hospital", tenderCode: "TND-001", revisionNo: 2, status: "pricing", boq: [{ id: "item-1", itemNo: "M-01", description: "CHW Pipe 100 mm", unit: "m", quantity: 100 }], analyses: { "item-1": { lines: [{ resourceId: "res-1", factor: 1.05 }], extras: {} }, }, documents: [], quotes: [], revisions: [] }], resources: [{ id: "res-1", code: "MAT-01", name: "Pipe", type: "material", unit: "m", rate: 82 }], auditLog: [] }
+  return { schemaVersion: 6, appVersion: "0.14.0", projects: [{ id: "project-1", tenantId: "tenant-company-pilot", workspaceId: "company", name: "Hospital", tenderCode: "TND-001", revisionNo: 2, status: "pricing", boq: [{ id: "item-1", itemNo: "M-01", description: "CHW Pipe 100 mm", unit: "m", quantity: 100 }], analyses: { "item-1": { lines: [{ resourceId: "res-1", factor: 1.05 }], extras: {} }, }, documents: [], quotes: [], revisions: [] }], resources: [{ id: "res-1", code: "MAT-01", name: "Pipe", type: "material", unit: "m", rate: 82 }], auditLog: [] }
 }
 
 test("SQLite vault persists normalized records and rejects tampering", () => {
@@ -45,13 +45,13 @@ test("encrypted Project Package round-trips, verifies attachments and detects co
   try {
     const attachments = path.join(folder, "source-attachments"); const root = path.join(folder, "package")
     fs.mkdirSync(attachments); fs.writeFileSync(path.join(attachments, "quotation.txt"), "Supplier quote 82 SAR")
-    const key = crypto.randomBytes(32); const created = createProjectPackage({ targetRoot: root, state: sampleState(), sourceAttachments: attachments, key, appVersion: "0.13.0" })
+    const key = crypto.randomBytes(32); const created = createProjectPackage({ targetRoot: root, state: sampleState(), sourceAttachments: attachments, key, appVersion: "0.14.0" })
     assert.equal(created.manifest.encryption.state, "encrypted"); assert.ok(created.manifest.checksumsSha256); assert.equal(verifyProjectPackage(root).manifest.packageId, created.manifest.packageId)
     const restored = readProjectPackage({ root, key }); assert.equal(restored.state.projects[0].boq[0].quantity, 100)
     fs.appendFileSync(path.join(root, "attachments", "quotation.txt"), " tampered")
     assert.throws(() => verifyProjectPackage(root), /PACKAGE_(?:CHECKSUM_MANIFEST_TAMPERED|INTEGRITY_FAILED)/)
     const portableRoot = path.join(folder, "portable")
-    const portable = createProjectPackage({ targetRoot: portableRoot, state: sampleState(), sourceAttachments: attachments, passphrase: "portable-passphrase", appVersion: "0.13.0" })
+    const portable = createProjectPackage({ targetRoot: portableRoot, state: sampleState(), sourceAttachments: attachments, passphrase: "portable-passphrase", appVersion: "0.14.0" })
     assert.equal(portable.manifest.encryption.keySource, "passphrase"); assert.equal(readProjectPackage({ root: portableRoot, passphrase: "portable-passphrase" }).state.projects[0].name, "Hospital"); assert.throws(() => readProjectPackage({ root: portableRoot, passphrase: "wrong" }), /PACKAGE_DECRYPT_FAILED/)
   } finally { fs.rmSync(folder, { recursive: true, force: true }) }
 })
@@ -111,7 +111,7 @@ test("runtime staging can cross-target a Windows x64 runtime", () => {
     const result = stageRuntime({ electronDist, outputDir: output, sourceRoot: path.resolve(__dirname, ".."), electronVersion: "37.2.6", targetPlatform: "win32", targetArchitecture: "x64" })
     assert.equal(result.manifest.platform, "win32"); assert.equal(result.manifest.architecture, "x64")
     assert.equal(fs.existsSync(path.join(output, "QESTIMA.exe")), true); assert.equal(fs.existsSync(path.join(output, "QESTIMA")), false)
-    assert.equal(validateRuntimeCandidate(output, { expectedAppVersion: "0.13.0" }).ok, true)
+    assert.equal(validateRuntimeCandidate(output, { expectedAppVersion: "0.14.0" }).ok, true)
   } finally { fs.rmSync(folder, { recursive: true, force: true }) }
 })
 
@@ -145,13 +145,13 @@ test("release preflight simulates install, upgrade and rollback without creating
     const electronDist = path.join(folder, "electron"); const sourceRoot = path.resolve(__dirname, ".."); const staging = path.join(folder, "staging")
     fs.mkdirSync(electronDist); fs.writeFileSync(path.join(electronDist, "electron"), "runtime-v1"); fs.writeFileSync(path.join(electronDist, "resources.pak"), "pak"); fs.writeFileSync(path.join(electronDist, "icudtl.dat"), "icu")
     stageRuntime({ electronDist, outputDir: staging, sourceRoot, electronVersion: "37.2.6", targetPlatform: "linux" })
-    assert.equal(validateRuntimeCandidate(staging, { expectedAppVersion: "0.13.0" }).ok, true)
-    const installDir = path.join(folder, "installed"); const first = installStagedRuntime({ staging, installDir, expectedAppVersion: "0.13.0" })
+    assert.equal(validateRuntimeCandidate(staging, { expectedAppVersion: "0.14.0" }).ok, true)
+    const installDir = path.join(folder, "installed"); const first = installStagedRuntime({ staging, installDir, expectedAppVersion: "0.14.0" })
     assert.equal(fs.existsSync(path.join(installDir, "resources", "app", "electron", "main.cjs")), true); assert.equal(first.backupDir, null)
     fs.writeFileSync(path.join(installDir, "user-data-marker.txt"), "outside-data-is-not-in-program-folder")
     fs.writeFileSync(path.join(electronDist, "electron"), "runtime-v2"); const upgradedStaging = path.join(folder, "staging-v2")
     stageRuntime({ electronDist, outputDir: upgradedStaging, sourceRoot, electronVersion: "37.2.6", targetPlatform: "linux" })
-    const upgraded = upgradeStagedRuntime({ staging: upgradedStaging, installDir, expectedAppVersion: "0.13.0" })
+    const upgraded = upgradeStagedRuntime({ staging: upgradedStaging, installDir, expectedAppVersion: "0.14.0" })
     assert.ok(upgraded.backupDir); assert.equal(fs.existsSync(path.join(upgraded.backupDir, "user-data-marker.txt")), true)
     const recovered = recoverInstalledRuntime({ installDir, backupDir: upgraded.backupDir }); assert.equal(recovered.ok, true); assert.equal(fs.existsSync(path.join(installDir, "user-data-marker.txt")), true)
   } finally { fs.rmSync(folder, { recursive: true, force: true }) }

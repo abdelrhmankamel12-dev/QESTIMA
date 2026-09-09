@@ -1,0 +1,54 @@
+const { _electron: electron } = require('playwright')
+const fs = require('node:fs')
+const path = require('node:path')
+const assert = require('node:assert/strict')
+async function main() {
+  assert.equal(process.platform, 'win32')
+  assert.equal(process.env.GITHUB_ACTIONS, 'true')
+  const executablePath = path.resolve(process.argv[2])
+  fs.mkdirSync('artifacts', { recursive: true })
+  let app
+  try {
+    app = await electron.launch({ executablePath, timeout: 60000 })
+    let page = await app.firstWindow()
+    const errors = []
+    page.on('pageerror', e => errors.push(e.message))
+    await page.locator('#workspace button[data-action=new-project]').first().waitFor({ state: 'visible', timeout: 60000 })
+    assert.equal(await page.locator('#login-screen:visible').count(), 0)
+    assert.equal(await page.locator('[data-action=reactivate-license]:visible').count(), 0)
+    assert.equal(await page.locator('#main-nav [data-view=owner_portal]:visible').count(), 0)
+    await page.locator('#workspace button[data-action=new-project]').first().click()
+    await page.locator('#project-form [name=name]').fill('Open edition project')
+    await page.locator('button[form=project-form]').click()
+    await page.locator('#main-nav [data-view=boq]').click()
+    await page.locator('#workspace button[data-action=add-boq]').first().click()
+    await page.locator('#boq-form [name=itemNo]').fill('P-001')
+    await page.locator('#boq-form [name=unit]').fill('m')
+    await page.locator('#boq-form [name=description]').fill('PPR pipe 25 mm')
+    await page.locator('#boq-form [name=quantity]').fill('120')
+    await page.locator('button[form=boq-form]').click()
+    await page.locator('#workspace').getByText('P-001', { exact: true }).first().waitFor()
+    await page.keyboard.press('Control+s')
+    await page.waitForFunction(async () => {
+      const state = await window.qestimaDesktop.loadData()
+      return state?.projects?.some(p => p.name === 'Open edition project' && p.boq.some(b => b.itemNo === 'P-001' && b.quantity === 120))
+    })
+    await page.screenshot({ path: 'artifacts/windows-boq-open.png', fullPage: true })
+    await app.close(); app = null
+    app = await electron.launch({ executablePath, timeout: 60000 })
+    page = await app.firstWindow()
+    await page.locator('#main-nav [data-view=boq]').waitFor({ state: 'visible', timeout: 60000 })
+    assert.equal(await page.locator('#login-screen:visible').count(), 0)
+    await page.locator('#main-nav [data-view=boq]').click()
+    await page.locator('#workspace').getByText('P-001', { exact: true }).first().waitFor()
+    await page.locator('#main-nav [data-view=reports]').click()
+    await page.locator('[data-report-tab=pricedBoq]').click()
+    await page.screenshot({ path: 'artifacts/windows-report-open.png', fullPage: true })
+    assert.deepEqual(errors, [])
+    fs.writeFileSync('artifacts/windows-startup-result.json', JSON.stringify({ passed: true, checks: ['direct startup without password or license', 'create project', 'add BOQ item', 'save and reopen project and quantity', 'open priced BOQ report'], scope: 'Open local workflow; advanced engines not covered' }, null, 2))
+  } catch (e) {
+    if (app?.windows().length) await app.windows()[0].screenshot({ path: 'artifacts/windows-failure.png', fullPage: true }).catch(() => {})
+    fs.writeFileSync('artifacts/windows-error.txt', String(e.stack)); throw e
+  } finally { if (app) await app.close() }
+}
+main().catch(e => { console.error(e); process.exitCode = 1 })
