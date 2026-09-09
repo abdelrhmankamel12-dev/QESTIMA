@@ -51,7 +51,7 @@ test("professional workspace boots into Projects Center", async () => {
   const storage = new Map([["qestima-v6", JSON.stringify(C.seedState())]])
   const localStorage = { getItem: (key) => storage.get(key) || null, setItem: (key, value) => storage.set(key, value) }
   const XLSX = require("../app/vendor/xlsx.full.min.js")
-  const window = { QESTIMACore: C, QESTIMACollaboration: Collaboration, QESTIMAModel: Model, addEventListener() {}, qestimaDesktop: null }
+  const window = { QESTIMACore: C, QESTIMACollaboration: Collaboration, QESTIMAModel: Model, QESTIMATenderIntake: require('../app/tender-intake.js'), addEventListener() {}, qestimaDesktop: null }
   const context = {
     window, document, localStorage, console, Intl, Date, Math, JSON, Blob, URL,
     indexedDB: {}, File: class File {}, HTMLFormElement: class HTMLFormElement {}, confirm: () => true, XLSX,
@@ -84,15 +84,15 @@ test("professional workspace boots into Projects Center", async () => {
   assert.match(index, /id="ribbon-tabs"/)
   assert.match(index, /data-tab="drawings"/)
   const topRibbonTabs = [...index.matchAll(/class="ribbon-tab[^>]*data-tab="([^"]+)"/g)].map((match) => match[1])
-  assert.deepEqual(topRibbonTabs, ["file", "home", "drawings", "dimensions", "revisions", "cost_estimation", "suppliers", "intelligence", "reports", "admin"])
+  assert.deepEqual(topRibbonTabs, ["home", "tender_ai", "cost_estimation", "drawings", "suppliers", "reports"])
   assert.doesNotMatch(index, /data-tab="models"/)
   assert.doesNotMatch(index, /data-tab="subcontractors"/)
   assert.match(index, /data-ribbon-panel="reports"/)
   assert.match(index, /data-ribbon-panel="suppliers"/)
   assert.match(index, /data-ribbon-panel="home"/)
   assert.match(index, /role="tablist"/)
-  assert.equal((index.match(/role="tab"/g) || []).length, 10)
-  assert.equal((index.match(/role="tabpanel"/g) || []).length, 10)
+  assert.equal((index.match(/role="tab"/g) || []).length, 6)
+  assert.equal((index.match(/role="tabpanel"/g) || []).length, 6)
   for (const group of ["Import", "Drawing", "View", "Layers", "Scale", "Revisions", "Model Review"]) assert.match(index, new RegExp(`ribbon-group"><span>${group}<\\/span>`))
   for (const group of ["BOQ", "Rate Build-Up", "Resources", "Productivity", "Indirect Cost", "Pricing", "Selling Price", "Scenarios", "Review", "History", "Outputs"]) assert.match(index, new RegExp(`ribbon-group"><span>${group}<\\/span>`))
   assert.match(index, /id="contextual-tabs"/)
@@ -135,6 +135,18 @@ test("professional workspace boots into Projects Center", async () => {
   assert.match(fs.readFileSync(path.join(__dirname, "../electron/preload.cjs"), "utf8"), /exportReportPack:/)
   assert.match(fs.readFileSync(path.join(__dirname, "../electron/main.cjs"), "utf8"), /ipcMain\.handle\("report:pack"/)
 
+  window.__QESTIMATest.openView("boq")
+  window.__QESTIMATest.openView("tender_ai")
+  assert.match(elements.workspace.innerHTML, /TENDER AI/)
+  assert.match(elements.workspace.innerHTML, /BOQ REVIEW/)
+  const intakeState = window.__QESTIMATest.getState()
+  const intakeProject = intakeState.projects.find(p => p.id === intakeState.activeProjectId) || intakeState.projects[0]
+  intakeProject.tenderIntake = window.QESTIMATenderIntake.stage(intakeProject, [{id:'review-test', name:'Contract.pdf', hash:'test-hash'}], 'test', '2026-09-09T18:00:00Z').queue
+  window.__QESTIMATest.openView("tender_ai")
+  assert.match(elements.workspace.innerHTML, /Contract.pdf/)
+  await window.__QESTIMATest.handleClick({target:{nodeType:1,dataset:{action:'intake-review',id:'intake-review-test'},matches:s=>s==='[data-action]'},preventDefault(){}})
+  assert.match(elements['modal-root'].innerHTML, /id="intake-review-form"/)
+  assert.match(elements['modal-root'].innerHTML, /name="supersedes"/)
   window.__QESTIMATest.openView("boq")
   assert.match(elements.workspace.innerHTML, /BOQ Pricing Sheet/)
   assert.match(elements.workspace.innerHTML, /Unit Direct Cost/)

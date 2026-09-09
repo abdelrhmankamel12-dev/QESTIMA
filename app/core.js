@@ -716,6 +716,8 @@
       groups.get(key).push(document)
     })
     groups.forEach((documents) => {
+      // Engineer-approved revision selection must survive normalization.
+      if (documents.some(document => document.manualRevision)) return
       const sorted = [...documents].sort((a, b) => revisionRank(b.revision) - revisionRank(a.revision) || String(b.receivedDate).localeCompare(String(a.receivedDate)))
       const latest = sorted[0]
       sorted.forEach((document) => {
@@ -1637,7 +1639,7 @@
     const projectId = "project-demo"
     const state = {
       schemaVersion: 6,
-      appVersion: "0.14.0",
+      appVersion: "0.15.0",
       activeProjectId: projectId,
       activeScenarioId: "sc-competitive",
       user: { name: "عبدالرحمن كامل", initials: "AK" },
@@ -1650,7 +1652,7 @@
       },
       license: defaultLicense(now),
       users: [
-        { id: "user-owner", name: "عبدالرحمن كامل", initials: "AK", email: "", role: "system_admin", active: true, tenantIds: ["tenant-personal", "tenant-company-pilot"], createdAt: now, lastConnectionAt: now, appVersion: "0.14.0" },
+        { id: "user-owner", name: "عبدالرحمن كامل", initials: "AK", email: "", role: "system_admin", active: true, tenantIds: ["tenant-personal", "tenant-company-pilot"], createdAt: now, lastConnectionAt: now, appVersion: "0.15.0" },
         { id: "user-estimator", name: "Ahmed Estimator", initials: "AE", email: "", role: "estimator", active: true, tenantIds: ["tenant-company-pilot"], createdAt: now, lastConnectionAt: "", appVersion: "" },
         { id: "user-procurement", name: "Procurement Engineer", initials: "PR", email: "", role: "procurement", active: true, tenantIds: ["tenant-company-pilot"], createdAt: now, lastConnectionAt: "", appVersion: "" },
         { id: "user-commercial", name: "Commercial Reviewer", initials: "CR", email: "", role: "commercial_reviewer", active: true, tenantIds: ["tenant-company-pilot"], createdAt: now, lastConnectionAt: "", appVersion: "" },
@@ -1948,13 +1950,13 @@
     if (![2, 3, 4, 5, 6].includes(value.schemaVersion)) return ensureState(migrateLegacy(value))
     const state = deepClone(value)
     state.schemaVersion = 6
-    state.appVersion = "0.14.0"
+    state.appVersion = "0.15.0"
     state.resources = Array.isArray(state.resources) ? state.resources : []
     state.suppliers = Array.isArray(state.suppliers) ? state.suppliers : []
     state.projects = Array.isArray(state.projects) ? state.projects : []
     state.user ||= { name: "عبدالرحمن كامل", initials: "AK" }
     const now = new Date().toISOString()
-    state.users = Array.isArray(state.users) && state.users.length ? state.users : [{ id: "user-owner", name: state.user.name || "عبدالرحمن كامل", initials: state.user.initials || "AK", email: "", role: "system_admin", active: true, tenantIds: ["tenant-personal", "tenant-company-pilot"], createdAt: now, lastConnectionAt: now, appVersion: "0.14.0" }]
+    state.users = Array.isArray(state.users) && state.users.length ? state.users : [{ id: "user-owner", name: state.user.name || "عبدالرحمن كامل", initials: state.user.initials || "AK", email: "", role: "system_admin", active: true, tenantIds: ["tenant-personal", "tenant-company-pilot"], createdAt: now, lastConnectionAt: now, appVersion: "0.15.0" }]
     state.workspaces = Array.isArray(state.workspaces) && state.workspaces.length ? state.workspaces : [
       { id: "workspace-personal", name: `${state.users[0].name} — Personal`, type: "personal", ownerUserId: state.users[0].id, storageMode: "local_encrypted_cache", syncStatus: "offline", members: [{ userId: state.users[0].id, role: "system_admin" }], createdAt: now },
       { id: "workspace-company", name: "QESTIMA Company Pilot", type: "company", ownerUserId: state.users[0].id, storageMode: "central_server", syncStatus: "server_not_connected", members: [{ userId: state.users[0].id, role: "system_admin" }], createdAt: now },

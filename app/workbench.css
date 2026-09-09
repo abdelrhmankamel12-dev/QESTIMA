@@ -54,3 +54,29 @@
 .open-edition [data-command-id="assign-user"],
 .open-edition [data-command-id="sync-now"],
 .open-edition .boq-intelligence-actions { display: none !important; }
+.focus-edition #ribbon-tab-intelligence,
+.focus-edition #ribbon-tab-revisions,
+.focus-edition .boq-intelligence-strip,
+.focus-edition .boq-pro-shell > .readiness-grid,
+.focus-edition .rate-inspector .historical-matches,
+.focus-edition [data-command-id="scope-gaps-report"],
+.focus-edition [data-command-id="submission-pack"] { display: none !important; }
+.focus-edition .boq-pro-shell { display: flex; flex-direction: column; height: 100%; gap: 10px; }
+.focus-edition .boq-pro-layout { flex: 1; min-height: 350px; }
+.focus-edition .inspector-hidden .boq-pro-layout { grid-template-columns: minmax(0,1fr); }
+.focus-edition .inspector-hidden .rate-inspector { display: none !important; }
+.focus-edition .boq-pro-head { flex-wrap: wrap; gap: 8px; }
+.focus-edition .boq-pro-head .page-actions { flex-wrap: wrap; gap: 5px; }
+.focus-edition .pricing-grid { min-width: 860px; font-size: 13px; }
+.focus-edition .pricing-grid input, .focus-edition .pricing-grid select { font-size: 13px; min-height: 36px; }
+.focus-edition .pricing-grid th { font-size: 12px; position: sticky; top: 0; z-index: 1; }
+.focus-edition .pricing-grid .desc { min-width: 240px; }
+.focus-edition #workspace:not(.boq-details) .pricing-grid tr > :is(:nth-child(1),:nth-child(6),:nth-child(8),:nth-child(9),:nth-child(10),:nth-child(11),:nth-child(12),:nth-child(15),:nth-child(16)) { display: none; }
+.focus-edition #workspace.boq-details .pricing-grid { min-width: 1580px; }
+.focus-edition #project-form .field:has([name="creationMode"]),
+.focus-edition #project-form .field:has([name="sourceProjectId"]),
+.focus-edition #project-form .field:has([name="tenderNumber"]),
+.focus-edition #project-form .field:has([name="deadline"]),
+.focus-edition #project-form .field:has([name="workflowMode"]) { display: none; }
+.focus-edition .contextual-tabs { display: none; }
+.focus-edition .toast-stack { max-width: 300px; }

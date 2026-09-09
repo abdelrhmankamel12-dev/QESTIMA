@@ -29,10 +29,14 @@ async function main() {
     await page.locator('#boq-form [name=quantity]').fill('120')
     await page.locator('button[form=boq-form]').click()
     await page.locator('#workspace').getByText('P-001', { exact: true }).first().waitFor()
+    await page.locator('[data-action=quick-price]').click()
+    await page.locator('#quick-price-form [name=rate]').fill('25.5')
+    await page.locator('button[form=quick-price-form]').click()
+    await page.locator('#quick-price-form').waitFor({ state: 'hidden' })
     await page.keyboard.press('Control+s')
     await page.waitForFunction(async () => {
       const state = await window.qestimaDesktop.loadData()
-      return state?.projects?.some(p => p.name === 'Open edition project' && p.boq.some(b => b.itemNo === 'P-001' && b.quantity === 120))
+      return state?.projects?.some(p => p.name === 'Open edition project' && p.boq.some(b => b.itemNo === 'P-001' && b.quantity === 120 && b.pricingMethod === 'manual' && b.manualRate === 25.5))
     })
     await page.screenshot({ path: 'artifacts/windows-boq-open.png', fullPage: true })
     await app.close(); app = null

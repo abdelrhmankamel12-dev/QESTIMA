@@ -4,10 +4,12 @@
   const C = window.QESTIMACore
   const Collab = window.QESTIMACollaboration || { ensureCollaborationState: (value) => value }
   const Model = window.QESTIMAModel || {}
+  const Intake = window.QESTIMATenderIntake
   const viewTitles = {
     dashboard: "Project Overview",
     control: "Tender Control Center",
     projects: "إدارة المشاريع",
+    tender_ai: "TENDER AI — مراجعة المستندات",
     documents: "Tender Documents",
     tender_review: "Tender Review",
     scope: "Scope & Systems",
@@ -33,7 +35,8 @@
   const scopeStateLabels = { yes: "Yes", no: "No", partial: "Partial", available: "Available", missing: "Missing", unknown: "Not reviewed", na: "N/A" }
   const riskTypeLabels = { clarification: "Tender Clarification", commercial: "Commercial Risk", technical: "Technical Risk", assumption: "Assumption", exclusion: "Exclusion" }
   const tenderStatusLabels = { documents_missing: "Tender Documents Missing", review_incomplete: "Tender Review Incomplete", pricing: "Pricing In Progress", ready: "Ready for Final Review" }
-  const mainRibbonTabs = ["file", "home", "drawings", "dimensions", "revisions", "cost_estimation", "suppliers", "intelligence", "reports", "admin"]
+  const mainRibbonTabs = ["home", "tender_ai", "cost_estimation", "drawings", "suppliers", "reports"]
+  const mergedRibbonTab = tab => ({ file: "home", dimensions: "drawings", revisions: "drawings", intelligence: "cost_estimation", admin: "home", workbooks: "cost_estimation" }[tab] || tab)
   // The Ribbon is data-driven: this is the single source of truth for tab
   // order, groups, command metadata, permissions, feature flags and
   // keyboard shortcuts.  The HTML only provides accessible panel shells.
@@ -96,6 +99,13 @@
       ribbonGroup("Operations", "التشغيل", [ribbonCommand("updates", "Updates", "التحديثات", "download", { action: "central-health" }, { feature: "updates" }), ribbonCommand("audit-log", "Audit Log", "سجل التغييرات", "history", { view: "reports" }, { permission: "audit.view" }), ribbonCommand("customize-ribbon", "Customize Ribbon", "تخصيص الـRibbon", "edit", { action: "reset-ribbon" }), ribbonCommand("diagnostics", "Diagnostics", "التشخيص", "alert", { action: "report-problem" })]),
     ] },
   ]
+  ribbonConfig.push({ id: "tender_ai", label: "TENDER AI", groups: [
+    ribbonGroup("Tender Package", "حزمة المناقصة", [ribbonCommand("tender-intake", "Documents", "مراجعة التصنيف", "folder", { view: "tender_ai" }), ribbonCommand("tender-upload", "Upload Files", "رفع ملفات", "upload", { action: "upload-tender-files" }, { permission: "documents.edit" }), ribbonCommand("tender-folder", "Upload Folder", "رفع مجلد", "folder", { action: "upload-tender-folder" }, { permission: "documents.edit" }), ribbonCommand("tender-zip", "Upload ZIP", "رفع ZIP", "upload", { action: "upload-tender-zip" }, { permission: "documents.edit" })]),
+    ribbonGroup("Review", "المراجعة", [ribbonCommand("document-register", "Document Register", "سجل المستندات", "table", { view: "documents" }), ribbonCommand("tender-boq-review", "BOQ Review", "مراجعة الـBOQ", "check", { view: "quality" }), ribbonCommand("tender-risks", "Risks & Clarifications", "المخاطر والاستفسارات", "alert", { view: "risks" })])
+  ] })
+  // Preserve the command catalog and permission metadata, merge only navigation.
+  ribbonConfig.find(t => t.id === "home").groups.push(...ribbonConfig.find(t => t.id === "file").groups)
+  ribbonConfig.find(t => t.id === "drawings").groups.push(...ribbonConfig.find(t => t.id === "dimensions").groups, ribbonConfig.find(t => t.id === "revisions").groups[0])
   const ribbonActionPermissions = Object.fromEntries(ribbonConfig.flatMap((tab) => tab.groups.flatMap((group) => group.commands.filter((command) => command.action).map((command) => [command.action, command.permission]))))
   const reportSectionMeta = [
     ["managementSummary", "Management Summary", "ملخص الإدارة", "اتخاذ القرار ومؤشرات الجاهزية"],
@@ -138,7 +148,8 @@
   let activeModelId = null
   let activeReportTab = "managementSummary"
   let reportLanguage = "ar"
-  let inspectorHidden = false
+  let intakeCategory = "all"
+  let inspectorHidden = true
   let ribbonCollapsed = false
   let workspaceScroll = {}
   let ribbonHiddenCommands = []
@@ -196,7 +207,8 @@
       request.onerror = () => reject(request.error)
     })
     db.close()
-    return { id, name: file.name, originalName: file.name, size: file.size, fileType: file.name.includes(".") ? file.name.split(".").pop().toUpperCase() : "FILE" }
+    const hash = [...new Uint8Array(await crypto.subtle.digest("SHA-256", await file.arrayBuffer()))].map(b => b.toString(16).padStart(2, "0")).join("")
+    return { id, name: file.name, originalName: file.name, size: file.size, hash, fileType: file.name.includes(".") ? file.name.split(".").pop().toUpperCase() : "FILE" }
   }
 
   async function openBrowserAttachment(id) {
@@ -410,7 +422,7 @@
     openTabs = unique(savedTabs.length ? savedTabs : ["projects"])
     activeView = viewTitles[saved.activeView] ? saved.activeView : openTabs[0] || "projects"
     if (!openTabs.includes(activeView)) openTabs.unshift(activeView)
-    const savedRibbonTab = saved.activeRibbonTab === "workbooks" ? "cost_estimation" : saved.activeRibbonTab
+    const savedRibbonTab = mergedRibbonTab(saved.activeRibbonTab)
     activeRibbonTab = mainRibbonTabs.includes(savedRibbonTab) ? savedRibbonTab : "home"
     activeContextTab = String(saved.activeContextTab || "")
     activeItemId = saved.activeItemId || null
@@ -565,8 +577,8 @@
     activeContextTab = ""
     if (view === "drawings" && !activeDrawingId) drawingClosed = false
     const ribbonForView = { projects: "home", dashboard: "home", control: "home", documents: "file", tender_review: "home", scope: "home", boq: "cost_estimation", quantity_review: "dimensions", analysis: "cost_estimation", resources: "cost_estimation", suppliers: "suppliers", markup: "cost_estimation", risks: "intelligence", quality: "cost_estimation", decisions: "cost_estimation", reports: "reports", drawings: "drawings", models: "drawings", owner_portal: "admin", revisions: "revisions" }
-    activeRibbonTab = ribbonForView[view] || activeRibbonTab
-    openTabs = [view]
+    activeRibbonTab = ["tender_ai", "documents", "tender_review", "risks", "scope"].includes(view) ? "tender_ai" : mergedRibbonTab(ribbonForView[view] || activeRibbonTab)
+    if (!openTabs.includes(view)) openTabs.push(view)
     persistUiState()
     scheduleSave()
     render()
@@ -576,7 +588,7 @@
     if (openTabs.length === 1) return
     const index = openTabs.indexOf(view)
     openTabs = openTabs.filter((entry) => entry !== view)
-    if (activeView === view) activeView = openTabs[Math.max(0, index - 1)]
+    if (activeView === view) { openView(openTabs[Math.max(0, index - 1)]); return }
     persistUiState()
     scheduleSave()
     render()
@@ -613,7 +625,10 @@
       const tab = ribbonConfig.find((entry) => entry.id === panel.dataset.ribbonPanel)
       if (tab) {
         panel.setAttribute("aria-label", `${tab.label} commands`)
-        panel.innerHTML = tab.groups.map((group) => renderRibbonGroup(group, tab.id)).join("")
+        const allowed = new Set(["new-project", "open-project", "save", "save-as", "backup", "restore", "boq-workbook", "boq-add", "boq-import", "new-analysis", "copy-analysis-command", "rate-assembly", "recalculate", "material", "labor", "equipment", "subcontractor", "import-drawing", "import-dxf", "open-drawing", "close-drawing", "zoom-in", "zoom-out", "fit", "scale", "calibration", "length", "polyline", "area", "count", "link-to-boq", "measurement-sheet"])
+        ;["project-center", "undo", "redo", "search", "export-project", "print", "close-project", "recent-projects", "drawing-properties", "dimension-groups", "compare-drawings", "overlay", "add-revision", "profit", "contingency", "site-overhead", "unpriced", "quality-check", "price-updates", "crew"].forEach(id => allowed.add(id))
+        const groups = state.settings.openEdition && !["reports", "suppliers", "tender_ai"].includes(tab.id) ? tab.groups.map(group => ({ ...group, commands: group.commands.filter(command => allowed.has(command.id)) })).filter(group => group.commands.length) : tab.groups
+        panel.innerHTML = groups.map((group) => renderRibbonGroup(group, tab.id)).join("")
       }
     })
   }
@@ -693,14 +708,14 @@
 
   function renderOpenNavigation() {
     if (!state.settings.openEdition) return
-    document.body?.classList.add("open-edition")
-    const labels = { projects: "المشروعات", documents: "مستندات المناقصة", tender_review: "مراجعة المتطلبات", boq: "جدول الكميات والتسعير", quantity_review: "مراجعة الكميات", drawings: "الرسومات والحصر", analysis: "تحليل الأسعار", resources: "مكتبة الموارد", suppliers: "عروض الموردين", markup: "الإضافات والربح", quality: "المراجعة النهائية", reports: "التقارير والتصدير" }
+    document.body?.classList.add("open-edition", "focus-edition")
+    const labels = { projects: "المشروعات", documents: "سجل المستندات", boq: "جدول الكميات والتسعير", quantity_review: "اعتماد كميات الحصر", drawings: "الرسومات والحصر", analysis: "تحليل الأسعار", resources: "مكتبة الموارد", suppliers: "أسعار الموردين", markup: "الإضافات والربح", reports: "تقارير الحصر والتسعير" }
     $$("#main-nav [data-view]").forEach(button => {
       const label = labels[button.dataset.view]
       button.hidden = !label
       if (label) { const span = button.querySelector("span"); if (span) span.textContent = label }
     })
-    $$("#main-nav .nav-section").forEach((node, index) => { node.textContent = ["١ · المشروع", "٢ · المستندات", "٣ · الحصر والتسعير", "٤ · المراجعة والتسليم"][index] || "" })
+    $$("#main-nav .nav-section").forEach((node, index) => { node.textContent = ["المشروع", "", "الحصر والتسعير", "الإخراج"][index] || ""; node.hidden = index === 1 })
     $$('#main-nav [data-action="report-problem"], [data-action="logout"], [data-action="reactivate-license"], #ribbon-tab-admin').forEach(button => { button.hidden = true })
   }
 
@@ -757,7 +772,8 @@
     const viewState = { top: root.scrollTop || 0, left: root.scrollLeft || 0, nested: {} }
     const selectors = [".table-wrap", ".item-list", ".drawing-list", ".dimension-list", ".stage-canvas"]
     selectors.forEach((selector) => $$(selector, root).forEach((element, index) => { viewState.nested[`${selector}:${index}`] = { top: element.scrollTop || 0, left: element.scrollLeft || 0 } }))
-    workspaceScroll[activeView] = viewState
+    // The DOM still belongs to the previous view while navigation is rendering.
+    workspaceScroll[root.dataset.view || activeView] = viewState
   }
 
   function restoreWorkspaceScroll() {
@@ -792,8 +808,15 @@
     persistUiState()
     renderShell()
     const renderers = { dashboard: renderDashboard, control: renderControl, projects: renderProjects, documents: renderTenderDocuments, tender_review: renderTenderReview, scope: renderScope, boq: renderBoq, quantity_review: renderQuantityReview, analysis: renderAnalysis, resources: renderResources, suppliers: renderSuppliers, markup: renderMarkup, risks: renderRisks, quality: renderQuality, decisions: renderDecisions, reports: renderReports, drawings: renderDrawings, models: renderModels, owner_portal: renderOwnerPortal, revisions: renderRevisions }
+    renderers.tender_ai = renderTenderIntake
     $("#workspace").innerHTML = (renderers[activeView] || renderDashboard)()
     bindWorkbenchControls()
+    if (state.settings.openEdition && activeView === "boq") {
+      $("#workspace").classList.toggle("boq-details", state.uiState?.boqDetails === true)
+      const item = currentProject().boq.find(entry => entry.id === activeItemId)
+      const actions = $(".boq-pro-head .page-actions")
+      if (actions) actions.insertAdjacentHTML("afterbegin", `<button class="secondary-btn" data-action="boq-detail-toggle">${state.uiState?.boqDetails ? "أعمدة مختصرة" : "كل الأعمدة"}</button>${item ? `<button class="primary-btn" data-action="quick-price" data-id="${esc(item.id)}">تسعير ${esc(item.itemNo)}</button><button class="secondary-btn" data-action="open-analysis" data-id="${esc(item.id)}">تحليل السعر</button><button class="secondary-btn" data-action="link-boq" data-id="${esc(item.id)}">مصدر الكمية</button>` : ""}`)
+    }
     if (identity) {
       const replacement = $$("input, textarea, select", $("#workspace")).find((element) => identity.id ? element.id === identity.id : Object.keys(identity.data).length && Object.entries(identity.data).every(([key, value]) => element.dataset[key] === value))
       replacement?.focus?.({ preventScroll: true })
@@ -1162,6 +1185,15 @@
       document.pdfPageCount = analysis.pageCount
     })
     toast("تم تحليل PDF", `${analysis.insights.length} نتيجة تحتاج Review Queue · ${analysis.extractionMethod === "ocr" ? "OCR" : "Text PDF"}`)
+  }
+
+  function renderTenderIntake() {
+    const project = currentProject(), queue = project.tenderIntake || [], pending = queue.filter(r => r.status === "pending")
+    const shown = queue.filter(r => intakeCategory === "all" || (r.review?.category || r.suggestion.category) === intakeCategory)
+    return `${pageHead("TENDER AI", "اقتراح تصنيف محلي + مراجعة المهندس. تحليل المحتوى الذكي والربط التلقائي قيد التطوير.", `<button class="primary-btn" data-action="upload-tender-files">رفع ملفات</button><button class="secondary-btn" data-action="upload-tender-folder">رفع مجلد</button><button class="secondary-btn" data-action="upload-tender-zip">رفع ZIP</button><button class="secondary-btn" data-view="documents">المستندات المعتمدة</button>`)}
+      <p>${pending.length} ملف بانتظار المراجعة · ${queue.filter(r => r.status === "approved").length} ملف معتمد. لن يتغير الـBOQ أو السعر باعتماد التصنيف.</p>
+      <div class="page-actions intake-pages"><button data-action="intake-category" data-category="all" class="secondary-btn">ALL DOCUMENTS</button>${Object.entries(Intake.categories).map(([key,label]) => `<button class="${intakeCategory === key ? "primary-btn" : "secondary-btn"}" data-action="intake-category" data-category="${key}">${label}</button>`).join("")}</div>
+      <section class="card"><div class="table-wrap"><table class="data-table"><thead><tr><th>الملف الأصلي</th><th>التصنيف</th><th>سبب الاقتراح</th><th>الحالة</th><th>الإجراء</th></tr></thead><tbody>${shown.map(r => `<tr><td>${esc(r.source.name)}</td><td>${esc(Intake.categories[r.review?.category || r.suggestion.category])}</td><td>${esc(r.suggestion.reason)}</td><td>${r.status === "approved" ? "معتمد" : "بانتظار المراجعة"}</td><td><button class="secondary-btn" data-action="open-document" data-id="${esc(r.source.attachmentId)}">فتح المصدر</button>${r.status === "pending" ? `<button class="primary-btn" data-action="intake-review" data-id="${esc(r.id)}">مراجعة واعتماد</button>` : ""}</td></tr>`).join("") || '<tr><td colspan="5">لا توجد ملفات في هذا القسم. ارفع الملفات لبدء المراجعة.</td></tr>'}</tbody></table></div></section>`
   }
 
   function renderTenderDocuments() {
@@ -2103,7 +2135,7 @@
     const editing = Boolean(project)
     const value = project || { name: "", client: "", consultant: "", mainContractor: "", location: "", tenderNumber: "", deadline: "", pricingBaseDate: new Date().toISOString().slice(0, 10), currency: "SAR", tax: 15, projectType: "Commercial", disciplines: ["HVAC", "Fire Fighting", "Plumbing"], workflowMode: "standard", status: "draft" }
     const createChoices = editing ? "" : `<div class="field full"><label>طريقة البدء</label><div class="mode-cards"><label class="mode-card"><input type="radio" name="creationMode" value="blank" checked/><strong>مشروع فارغ</strong><span>ابدأ Tender Intake يدويًا.</span></label><label class="mode-card"><input type="radio" name="creationMode" value="package"/><strong>استيراد Tender Package</strong><span>أنشئ المشروع ثم ارفع Folder أو ZIP.</span></label><label class="mode-card"><input type="radio" name="creationMode" value="copy"/><strong>نسخ مشروع سابق</strong><span>استخدم الأسعار والتحليلات كنقطة بداية.</span></label></div></div><div class="field full"><label>المشروع المصدر للنسخ</label><select name="sourceProjectId"><option value="">— اختر عند استخدام نسخ مشروع سابق —</option>${state.projects.filter((entry) => entry.id !== project?.id).map((entry) => `<option value="${esc(entry.id)}">${esc(entry.name)} · ${esc(entry.tenderCode)}</option>`).join("")}</select></div>`
-    openModal(editing ? "تعديل بيانات المشروع" : "إنشاء مشروع جديد", "بعد الإنشاء ينتقل Standard Mode إلى Tender Documents، بينما يبدأ Quick Mode من BOQ مع تحذير مستمر.", `
+    openModal(editing ? "تعديل بيانات المشروع" : "إنشاء مشروع جديد", "أنشئ مشروعك ثم ابدأ بإدخال البنود وتسعيرها، أو افتح الرسومات للحصر.", `
       <form id="project-form" data-id="${esc(project?.id || "")}"><div class="field-grid cols-3">
         ${createChoices}
         <div class="field full"><label>Project Name *</label><input name="name" required value="${esc(value.name)}" placeholder="مثال: مشروع مجمع طبي" /></div>
@@ -2639,11 +2671,18 @@
 
   async function importTenderDocuments(mode) {
     try {
+      if (!C.can(state, "documents.edit", currentProject())) return toast("غير مسموح", "تحتاج صلاحية تعديل المستندات.", "warning")
       const picked = window.qestimaDesktop?.pickTenderDocuments ? await window.qestimaDesktop.pickTenderDocuments(mode) : await browserPickFiles(mode)
       if (!picked?.length) return
       const files = []
       for (const entry of picked) files.push(entry instanceof File ? await storeBrowserAttachment(entry) : entry)
       const project = currentProject()
+      if (Intake) {
+        const staged = Intake.stage(project, files, C.activeUser(state)?.id || "local", new Date().toISOString())
+        const saved = commit(`رفع حزمة للمراجعة: ${files.length} ملف`, () => { project.tenderIntake = staged.queue })
+        if (saved !== false) { openView("tender_ai"); toast("الملفات جاهزة لمراجعة التصنيف", `${staged.duplicates} ملف مكرر بالبصمة تم تجاهله. المصادر محفوظة دون تعديل.`) }
+        return
+      }
       const receivedDate = new Date().toISOString().slice(0, 10)
       commit(`إضافة ${files.length} مستند للمناقصة`, () => {
         files.forEach((file) => {
@@ -3059,8 +3098,24 @@
     if (action === "close-modal") return closeModal()
     if (action === "logout") return logout()
     if (!isAuthenticated) return
+    if (action === "intake-category") { intakeCategory = target.dataset.category; render(); return }
+    if (action === "intake-review") {
+      if (!C.can(state, "documents.edit", currentProject())) return toast("غير مسموح", "تحتاج صلاحية تعديل المستندات.", "warning")
+      const record = (currentProject().tenderIntake || []).find(r => r.id === target.dataset.id)
+      if (!record || record.status !== "pending") return
+      const suggestion = C.classifyTenderDocument(record.source.name)
+      openModal("مراجعة التصنيف والإصدار", "اعتماد يدوي قبل توجيه المستند", `<form id="intake-review-form"><input type="hidden" name="id" value="${esc(record.id)}"><p>${esc(record.source.name)} — افتح المصدر وتحقق من بياناته قبل الاعتماد.</p><label>التصنيف<select name="category">${Object.entries(Intake.categories).map(([k,v]) => `<option value="${k}" ${k === record.suggestion.category ? "selected" : ""}>${v}</option>`).join("")}</select></label><label>رقم المستند<input name="documentNumber" value="${esc(suggestion.documentNumber)}" required></label><label>الإصدار<input name="revision" value="${esc(suggestion.revision)}" required></label><label>التخصص<select name="discipline">${C.DISCIPLINES.map(d => `<option>${esc(d)}</option>`).join("")}</select></label><label>يحل محل إصدار سابق؟<select name="supersedes"><option value="">مستند جديد</option>${currentProject().documents.filter(d => d.status !== "superseded").map(d => `<option value="${esc(d.id)}">${esc(d.documentNumber)} — Rev ${esc(d.revision)}</option>`).join("")}</select></label><p>اعتماد إصدار بديل يغيّر المرجع الحالي فقط؛ لا يعدّل قياسات أو أسعارًا سابقة.</p><button class="primary-btn" type="submit">اعتماد التصنيف</button></form>`)
+      return
+    }
     const project = currentProject()
 
+    if (action === "boq-detail-toggle") { state.uiState ||= {}; state.uiState.boqDetails = !state.uiState.boqDetails; render(); scheduleSave(); return }
+    if (action === "quick-price") {
+      const item = project.boq.find(entry => entry.id === target.dataset.id)
+      if (!item) return
+      openModal("تسعير مباشر", `${item.itemNo} · ${item.description}`, `<form id="quick-price-form" data-id="${esc(item.id)}"><p>كمية التسعير: ${num(C.effectiveQuantity(item))} ${esc(item.unit)}. السعر المدخل تكلفة الوحدة قبل الإضافات والربح. سيصبح مصدر التسعير يدويًا، ويظل التحليل السابق محفوظًا.</p><div class="field"><label>تكلفة الوحدة</label><input name="rate" type="number" min="0" step="0.0001" required value="${C.itemCostUnit(project, item, state.resources)}" /></div></form>`, '<button class="secondary-btn" data-action="close-modal">إلغاء</button><button class="primary-btn" type="submit" form="quick-price-form">اعتماد السعر</button>')
+      return
+    }
     if (action === "ribbon-unavailable") return toast("الأداة غير متاحة بعد", target.title || "سيتم تفعيلها في محرك الرسم القادم.", "warning")
     if (action === "toggle-navigator") { $("#app-shell").classList.toggle("navigator-hidden"); return }
     if (action === "model-page-prev" || action === "model-page-next") { modelPage = Math.max(0, modelPage + (action === "model-page-next" ? 1 : -1)); render(); return }
@@ -3893,6 +3948,21 @@
 
   async function handleSubmit(event) {
     const form = event.target
+    if (form?.id === "intake-review-form") {
+      event.preventDefault()
+      if (!isAuthenticated || !C.can(state, "documents.edit", currentProject())) return toast("غير مسموح", "تحتاج صلاحية تعديل المستندات.", "warning")
+      if (!form.reportValidity()) return
+      const values = formObject(form)
+      try {
+        const reviewed = Intake.approve(currentProject(), values.id, values, C.activeUser(state)?.id || "local", new Date().toISOString())
+        const saved = commit("اعتماد تصنيف مستند وإصداره", () => { Object.assign(currentProject(), reviewed) })
+        if (saved !== false) { closeModal(); openView("tender_ai"); await saveNow() }
+      } catch (error) {
+        const messages = { REVISION_CONFIRMATION_REQUIRED: "يوجد إصدار حالي لهذا المستند. اختره صراحة في خانة يحل محل إصدار سابق.", REVISION_ALREADY_EXISTS: "رقم المستند والإصدار موجودان بالفعل؛ تحقق من المصدر.", DOCUMENT_ID_REVISION_REQUIRED: "أدخل رقم المستند والإصدار واختر التصنيف.", INVALID_PREVIOUS_REVISION: "الإصدار السابق المختار لا يخص رقم المستند المدخل.", MULTIPLE_CURRENT_REVISIONS: "يوجد أكثر من إصدار حالي؛ راجع سجل المستندات أولًا." }
+        toast("لم يتم الاعتماد", messages[error.message] || error.message, "warning")
+      }
+      return
+    }
     if (form?.id === "login-form") {
       event.preventDefault()
       if (typeof form.reportValidity === "function" && !form.reportValidity()) return
@@ -4100,13 +4170,20 @@
           state.activeScenarioId = newProject.scenarios[1]?.id || newProject.scenarios[0]?.id
         }, { audit: false })
         activeItemId = null
-        activeView = values.creationMode === "package" || newProject.workflowMode !== "quick" ? "documents" : "boq"
+        activeView = state.settings.openEdition ? "boq" : values.creationMode === "package" || newProject.workflowMode !== "quick" ? "documents" : "boq"
         if (!openTabs.includes(activeView)) openTabs.push(activeView)
       }
       closeModal(); render(); toast(existing ? "تم تحديث المشروع" : "تم إنشاء المشروع", !existing && values.creationMode === "package" ? "ارفع الآن Tender Package من شاشة المستندات." : "")
       return
     }
 
+    if (form.id === "quick-price-form") {
+      const item = project.boq.find(entry => entry.id === form.dataset.id)
+      const rate = Number(values.rate)
+      if (!item || !Number.isFinite(rate) || rate < 0 || String(values.rate).trim() === "") return toast("سعر غير صالح", "أدخل رقمًا غير سالب.", "warning")
+      if (!commit(`تسعير مباشر ${item.itemNo}`, () => { item.pricingMethod = "manual"; item.manualRate = rate; item.sources ||= {}; item.sources.price = { type: "manual", date: new Date().toISOString(), user: state.user.name } })) return
+      await saveNow(); closeModal(); render(); return
+    }
     if (form.id === "boq-form") {
       if (project.boq.some((item) => item.itemNo.trim().toLowerCase() === values.itemNo.trim().toLowerCase())) return toast("رقم البند موجود بالفعل", "استخدم رقمًا مختلفًا أو عدّل البند الحالي.", "warning")
       const item = { id: C.id("boq"), itemNo: values.itemNo.trim(), description: values.description.trim(), unit: values.unit.trim(), quantity: C.number(values.quantity), section: values.section.trim() || "غير مصنف", system: values.system.trim() || "MEP", floor: values.floor.trim() || "عام", pricingMethod: "analysis", manualRate: 0, selectedQuoteId: null, notes: "", sources: { quantity: { type: "manual", date: new Date().toISOString(), user: C.activeUser(state)?.name || state.user.name }, price: null }, drawingDocumentId: "", drawingRevision: "", specificationDocumentId: "", specificationSection: "", building: "", floorZone: values.floor.trim() || "عام", takeoffQuantity: 0, quantityBasis: "boq", quantityDecision: "boq", linkedRfqId: "", linkedRiskId: "" }
