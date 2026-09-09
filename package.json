@@ -1,0 +1,21 @@
+{
+  "name": "qestima-universal",
+  "version": "0.14.0",
+  "description": "QESTIMA Tender Operating System - universal Windows MEP tender intelligence and estimating application.",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/*.test.cjs",
+    "test:packaging": "node --test tests/packaging.test.cjs",
+    "test:browser": "node tests/browser-interaction.cjs",
+    "desktop": "electron electron/main.cjs",
+    "desktop:dev": "electron electron/main.cjs --dev",
+    "prepare:runtime": "node build/prepare-runtime.cjs",
+    "release:build": "node build/create-release.cjs",
+    "central-server": "node server/api.cjs"
+  },
+  "main": "electron/main.cjs",
+  "engines": { "node": ">=22.5.0" },
+  "devDependencies": {
+    "electron": "^37.2.6"
+  }
+}
