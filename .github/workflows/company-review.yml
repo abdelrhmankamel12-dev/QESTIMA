@@ -26,4 +26,5 @@ jobs:
           path: |
             build/company-evidence
             artifacts/workbench-actual.png
+            artifacts/tender-intake-actual.png
           retention-days: 7

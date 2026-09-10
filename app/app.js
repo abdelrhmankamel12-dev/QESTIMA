@@ -2672,11 +2672,13 @@
   async function importTenderDocuments(mode) {
     try {
       if (!C.can(state, "documents.edit", currentProject())) return toast("غير مسموح", "تحتاج صلاحية تعديل المستندات.", "warning")
+      const project = currentProject()
       const picked = window.qestimaDesktop?.pickTenderDocuments ? await window.qestimaDesktop.pickTenderDocuments(mode) : await browserPickFiles(mode)
       if (!picked?.length) return
       const files = []
       for (const entry of picked) files.push(entry instanceof File ? await storeBrowserAttachment(entry) : entry)
-      const project = currentProject()
+      if (currentProject() !== project) return toast("تغير المشروع الحالي", "أعد رفع الملفات داخل المشروع المطلوب.", "warning")
+      if (!C.can(state, "documents.edit", project)) return toast("غير مسموح", "تغيرت صلاحية تعديل المستندات.", "warning")
       if (Intake) {
         const staged = Intake.stage(project, files, C.activeUser(state)?.id || "local", new Date().toISOString())
         const saved = commit(`رفع حزمة للمراجعة: ${files.length} ملف`, () => { project.tenderIntake = staged.queue })
@@ -2713,17 +2715,22 @@
   }
 
   async function importCadDocument(format = "DXF") {
+    const project = currentProject()
+    if (!C.can(state, "documents.edit", project)) return toast("غير مسموح", "تحتاج صلاحية تعديل المستندات.", "warning")
     const normalized = String(format || "DXF").toUpperCase()
-    if (!window.qestimaDesktop?.pickCadDocument || !window.qestimaDesktop?.inspectCadDocument) return toast("استيراد CAD متاح في تطبيق Windows", "استخدم نسخة سطح المكتب المضمنة لفحص DXF بأمان.", "warning")
-    const picked = await window.qestimaDesktop.pickCadDocument(normalized)
-    if (!picked) return
-    const result = await window.qestimaDesktop.inspectCadDocument(picked.id)
-    if (!result?.ok) return toast(`تعذر قراءة ${normalized}`, (result.warnings || [result.reason || "CAD inspection failed"]).join(" · "), "warning")
-    const project = currentProject(); const suggestion = C.classifyTenderDocument(picked.originalName || picked.name || `${normalized}.cad`); const receivedDate = new Date().toISOString().slice(0, 10)
-    const document = { id: C.id("doc"), documentNumber: suggestion.documentNumber, title: suggestion.title, category: "drawings", discipline: suggestion.discipline, revision: suggestion.revision, issueDate: "", receivedDate, fileType: normalized, status: "current", latestRevision: true, supersededBy: "", notes: "", originalName: picked.originalName || picked.name, size: picked.size || 0, hash: picked.hash || "", attachment: { id: picked.id, name: picked.name }, cadInspection: { format: result.format, model: result.model || {}, convertedFrom: result.convertedFrom || "", inspectedAt: new Date().toISOString(), inspectedBy: C.activeUser(state)?.name || state.user.name, warnings: result.warnings || [] } }
-    commit(`استيراد ${normalized} ${document.title}`, () => { project.documents.push(document); C.recalculateDocumentRevisions(project); project.tenderReview.completedAt = "" })
-    activeDrawingId = document.id; openView("drawings")
-    toast(`تم استيراد ${normalized}`, `${result.model?.entityCount || 0} عنصر · تم حفظ الرسم والملخص دون اعتماد كميات تلقائيًا.`)
+    if (!window.qestimaDesktop?.pickCadDocument) return toast("استيراد CAD متاح في تطبيق Windows", "استخدم نسخة سطح المكتب لاستيراد الرسم.", "warning")
+    try {
+      const picked = await window.qestimaDesktop.pickCadDocument(normalized)
+      if (!picked) return
+      if (currentProject() !== project) return toast("تغير المشروع الحالي", "أعد الاستيراد داخل المشروع المطلوب.", "warning")
+      if (!C.can(state, "documents.edit", project)) return toast("غير مسموح", "تغيرت صلاحية تعديل المستندات.", "warning")
+      const staged = Intake.stage(project, [{ ...picked, fileType: normalized }], C.activeUser(state)?.id || "local", new Date().toISOString())
+      const saved = commit(`رفع رسم ${normalized} للمراجعة`, () => { project.tenderIntake = staged.queue })
+      if (saved !== false) {
+        openView("tender_ai")
+        toast(staged.duplicates ? "الرسم موجود بالفعل" : "الرسم بانتظار مراجعة الإصدار", staged.duplicates ? "تم تجاهل الملف المكرر بالبصمة." : "اعتمد رقم المستند والإصدار أولًا، ثم افحص CAD من الرسومات. لم تتغير القياسات أو الأسعار.")
+      }
+    } catch (error) { toast("تعذر استيراد الرسم", error.message, "error") }
   }
 
   async function importIfcModel() {

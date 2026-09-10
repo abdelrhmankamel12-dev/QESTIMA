@@ -6,6 +6,7 @@ const fs = require("node:fs")
 const path = require("node:path")
 const assert = require("node:assert/strict")
 const C = require("../app/core.js")
+const Intake = require("../app/tender-intake.js")
 async function main() {
   const root = path.resolve(__dirname, "../app")
   const server = createServer((req, res) => {
@@ -22,6 +23,8 @@ async function main() {
     const errors = []
     page.on("pageerror", (error) => errors.push(error.message))
     const fixture = C.seedState()
+    const project = fixture.projects.find(p => p.id === fixture.activeProjectId) || fixture.projects[0]
+    project.tenderIntake = Intake.stage(project, [{id: 'browser-contract', name: 'Contract-review.pdf', hash: 'browser-fixture-contract', fileType: 'PDF'}], 'fixture', new Date().toISOString()).queue
     await page.addInitScript((value) => localStorage.setItem("qestima-v6", JSON.stringify(value)), fixture)
     await page.goto(`http://127.0.0.1:${server.address().port}/`)
     await page.locator('#workspace button[data-action="new-project"]').first().waitFor({ state: 'visible' })
@@ -42,11 +45,22 @@ async function main() {
     await page.locator('#main-nav button[data-view="reports"]').click()
     await page.locator('[data-report-tab="pricedBoq"]').click()
     assert.equal(await page.locator('[data-report-tab="pricedBoq"]').getAttribute("class"), "active")
+    await page.locator('#ribbon-tab-tender-ai').click()
+    await page.locator('[data-action="intake-review"][data-id="intake-browser-contract"]').click()
+    const review = page.locator('#intake-review-form')
+    await review.locator('[name="documentNumber"]').fill('BROWSER-CONTRACT-001')
+    await review.locator('[name="revision"]').fill('0')
+    await review.locator('button[type="submit"]').click()
+    await review.waitFor({state:'detached'})
+    assert.equal(await page.locator('[data-action="intake-review"][data-id="intake-browser-contract"]').count(), 0)
+    assert.match(await page.locator('#workspace').innerText(), /معتمد/)
+    fs.mkdirSync(path.resolve(__dirname, "../artifacts"), { recursive: true })
+    await page.screenshot({ path: path.resolve(__dirname, "../artifacts/tender-intake-actual.png"), fullPage: true })
     await page.locator('#main-nav button[data-view="boq"]').click()
     fs.mkdirSync(path.resolve(__dirname, "../artifacts"), { recursive: true })
     await page.screenshot({ path: path.resolve(__dirname, "../artifacts/workbench-actual.png"), fullPage: true })
     assert.deepEqual(errors, [])
-    console.log("PASS: login, ordinary typing, filtering, internal button routing, report tabs; screenshot saved.")
+    console.log("PASS: login, ordinary typing, filtering, internal button routing, report tabs, tender review approval; screenshots saved.")
   } finally { if (browser) await browser.close(); await new Promise((resolve) => server.close(resolve)) }
 }
 main().catch((error) => { console.error(error); process.exitCode = 1 })
