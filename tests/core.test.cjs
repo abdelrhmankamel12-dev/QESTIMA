@@ -130,7 +130,7 @@ test("v0.2 project upgrades to QESTIMA v0.7 without losing pricing data", () => 
   delete old.projects[0].scopeMatrix
   const upgraded = C.ensureState(old)
   assert.equal(upgraded.schemaVersion, 6)
-  assert.equal(upgraded.appVersion, "0.14.0")
+  assert.equal(upgraded.appVersion, "0.15.0")
   assert.match(upgraded.projects[0].tenderCode, /^TND-\d{4}-\d{3}$/)
   assert.equal(upgraded.projects[0].tenderSummary.length, C.tenderSummaryFields.length)
   assert.ok(upgraded.projects[0].scopeMatrix.length > 0)

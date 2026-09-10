@@ -189,7 +189,7 @@ ipcMain.handle("project:export-package", async (_event, payload = {}) => {
   const state = { schemaVersion: original.schemaVersion, appVersion: original.appVersion, projects: [selected], activeProjectId: selected.id, resources: (original.resources || []).filter((entry) => resourceIds.has(entry.id)), suppliers: (original.suppliers || []).filter((entry) => supplierIds.has(entry.id)) }
   const passphrase = String(payload?.passphrase || "")
   const project = state?.projects?.find((entry) => entry.id === state?.activeProjectId) || state?.projects?.[0]
-  const attachmentIds = [...(project?.documents || []), ...(project?.quotes || [])].map((entry) => entry.attachment?.id).filter(Boolean)
+  const attachmentIds = [...new Set([...[(project?.documents || []), (project?.quotes || [])].flat().map(entry => entry.attachment?.id), ...(project?.tenderIntake || []).map(entry => entry.source?.attachmentId)].filter(Boolean))]
   createProjectPackage({ state, passphrase, attachmentIds, sourceAttachments: path.join(app.getPath("userData"), "attachments"), targetRoot: target, key: dataStore.key, appVersion: state?.appVersion || "", keySource: "local-vault" })
   return target
 })

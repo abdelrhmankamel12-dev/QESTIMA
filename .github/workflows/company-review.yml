@@ -1,0 +1,30 @@
+name: Company security review (no installer)
+on:
+  push:
+    branches: [company-security-review]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm install --no-save --package-lock=false --ignore-scripts playwright@1.51.1
+      - run: npx playwright install --with-deps chromium
+      - run: node --test tests/*.test.cjs
+      - run: node tests/company-browser.cjs
+      - run: node tests/browser-interaction.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: company-review-evidence
+          path: |
+            build/company-evidence
+            artifacts/workbench-actual.png
+            artifacts/tender-intake-actual.png
+          retention-days: 7

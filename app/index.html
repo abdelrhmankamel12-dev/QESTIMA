@@ -77,6 +77,7 @@
         </div>
 
         <nav id="main-nav" class="main-nav">
+          <button data-view="tender_ai"><svg><use href="#i-attach"/></svg><span>TENDER AI</span></button>
           <span class="nav-section">PROJECT</span>
           <button data-view="projects" class="active"><svg><use href="#i-folder"/></svg><span>Projects Center</span></button>
           <button data-view="dashboard"><svg><use href="#i-grid"/></svg><span>Project Overview</span></button>
@@ -104,9 +105,15 @@
           <button data-action="report-problem"><svg><use href="#i-alert"/></svg><span>Report a Problem</span></button>
         </nav>
 
+        <section id="project-navigator" class="project-navigator" aria-label="محتويات المشروع">
+          <header><strong id="navigator-title">المشروع</strong></header>
+          <input id="navigator-search" type="search" placeholder="بحث داخل الشجرة…" aria-label="بحث داخل شجرة المشروع" />
+          <div id="navigator-tree"></div>
+        </section>
+        <div id="navigator-resize" class="navigator-resize" role="separator" tabindex="0" aria-label="تغيير عرض شجرة المشروع" aria-orientation="vertical" aria-valuemin="190" aria-valuemax="380" aria-valuenow="230"></div>
         <div class="sidebar-foot">
           <div class="save-state"><span id="save-dot"></span><div><strong id="save-label">محفوظ</strong><small id="save-time">تلقائيًا على جهازك</small></div></div>
-          <span class="version">Tender Operating System · v0.14.0</span>
+          <span class="version">Tender Operating System · v0.15.0</span>
         </div>
       </aside>
 
@@ -128,27 +135,24 @@
         </header>
 
         <nav id="ribbon-tabs" class="ribbon-tabs no-print" role="tablist" aria-label="QESTIMA modules">
-          <button id="ribbon-tab-file" class="ribbon-tab file-tab" role="tab" aria-selected="false" aria-controls="ribbon-panel-file" data-action="ribbon-tab" data-tab="file">File</button>
-          <button id="ribbon-tab-home" class="ribbon-tab active" role="tab" aria-selected="true" aria-controls="ribbon-panel-home" data-action="ribbon-tab" data-tab="home">Home</button>
-          <button id="ribbon-tab-drawings" class="ribbon-tab" role="tab" aria-selected="false" aria-controls="ribbon-panel-drawings" data-action="ribbon-tab" data-tab="drawings">Drawings</button>
-          <button id="ribbon-tab-dimensions" class="ribbon-tab" role="tab" aria-selected="false" aria-controls="ribbon-panel-dimensions" data-action="ribbon-tab" data-tab="dimensions">Dimensions</button>
-          <button id="ribbon-tab-revisions" class="ribbon-tab" role="tab" aria-selected="false" aria-controls="ribbon-panel-revisions" data-action="ribbon-tab" data-tab="revisions">Revisions</button>
-          <button id="ribbon-tab-cost-estimation" class="ribbon-tab" role="tab" aria-selected="false" aria-controls="ribbon-panel-cost-estimation" data-action="ribbon-tab" data-tab="cost_estimation">Cost Estimation</button>
-          <button id="ribbon-tab-suppliers" class="ribbon-tab" role="tab" aria-selected="false" aria-controls="ribbon-panel-suppliers" data-action="ribbon-tab" data-tab="suppliers">Suppliers</button>
-          <button id="ribbon-tab-intelligence" class="ribbon-tab intelligence-tab" role="tab" aria-selected="false" aria-controls="ribbon-panel-intelligence" data-action="ribbon-tab" data-tab="intelligence">Intelligence</button>
-          <button id="ribbon-tab-reports" class="ribbon-tab" role="tab" aria-selected="false" aria-controls="ribbon-panel-reports" data-action="ribbon-tab" data-tab="reports">Reports</button>
-          <button id="ribbon-tab-admin" class="ribbon-tab admin-tab" role="tab" aria-selected="false" aria-controls="ribbon-panel-admin" data-action="ribbon-tab" data-tab="admin">⚙ Administration</button>
+          <button id="ribbon-tab-home" class="ribbon-tab active" role="tab" aria-selected="true" aria-controls="ribbon-panel-home" data-action="ribbon-tab" data-tab="home">HOME</button>
+          <button id="ribbon-tab-tender-ai" class="ribbon-tab" role="tab" aria-selected="false" aria-controls="ribbon-panel-tender-ai" data-action="ribbon-tab" data-tab="tender_ai">TENDER AI</button>
+          <button id="ribbon-tab-cost-estimation" class="ribbon-tab" role="tab" aria-selected="false" aria-controls="ribbon-panel-cost-estimation" data-action="ribbon-tab" data-tab="cost_estimation">ESTIMATION</button>
+          <button id="ribbon-tab-drawings" class="ribbon-tab" role="tab" aria-selected="false" aria-controls="ribbon-panel-drawings" data-action="ribbon-tab" data-tab="drawings">DRAWING</button>
+          <button id="ribbon-tab-suppliers" class="ribbon-tab" role="tab" aria-selected="false" aria-controls="ribbon-panel-suppliers" data-action="ribbon-tab" data-tab="suppliers">SUPPLIER</button>
+          <button id="ribbon-tab-reports" class="ribbon-tab" role="tab" aria-selected="false" aria-controls="ribbon-panel-reports" data-action="ribbon-tab" data-tab="reports">REPORTS</button>
         </nav>
 
         <div id="ribbon-stack" class="ribbon-stack no-print">
           <nav id="contextual-tabs" class="contextual-tabs" role="tablist" aria-label="Contextual tools" hidden></nav>
           <div id="command-ribbon" class="command-ribbon">
+          <section id="ribbon-panel-tender-ai" class="ribbon-panel" role="tabpanel" aria-labelledby="ribbon-tab-tender-ai" data-ribbon-panel="tender_ai" hidden></section>
           <section id="ribbon-panel-home" class="ribbon-panel active" role="tabpanel" aria-labelledby="ribbon-tab-home" data-ribbon-panel="home">
             <div class="ribbon-group"><span>Project</span><div><button data-view="projects"><svg><use href="#i-folder"/></svg><b>Projects</b></button><button data-action="edit-current-project"><svg><use href="#i-edit"/></svg><b>Project Data</b></button><button data-action="save-revision"><svg><use href="#i-history"/></svg><b>Save Revision</b></button></div></div>
             <div class="ribbon-group"><span>BOQ &amp; Pricing</span><div><button data-action="open-import"><svg><use href="#i-upload"/></svg><b>Import Excel</b></button><button data-action="add-boq"><svg><use href="#i-plus"/></svg><b>Add Item</b></button><button data-view="boq"><svg><use href="#i-table"/></svg><b>Pricing Sheet</b></button><button data-action="toggle-inspector"><svg><use href="#i-calculator"/></svg><b>Rate Inspector</b></button></div></div>
             <div class="ribbon-group"><span>Review</span><div><button data-view="control"><svg><use href="#i-grid"/></svg><b>Control Center</b></button><button data-view="quality"><svg><use href="#i-check"/></svg><b>Quality Gate</b></button><button data-view="reports"><svg><use href="#i-report"/></svg><b>Reports</b></button></div></div>
           </section>
-          <section id="ribbon-panel-file" class="ribbon-panel" role="tabpanel" aria-labelledby="ribbon-tab-file" data-ribbon-panel="file">
+          <section id="ribbon-panel-file" class="ribbon-panel" hidden data-legacy-ribbon-panel="file">
             <div class="ribbon-group"><span>Project File</span><div><button data-action="new-project"><svg><use href="#i-plus"/></svg><b>New Project</b></button><button data-action="backup"><svg><use href="#i-save"/></svg><b>Backup / Restore</b></button><button data-action="save-revision"><svg><use href="#i-history"/></svg><b>Save Revision</b></button></div></div>
             <div class="ribbon-group"><span>Exchange</span><div><button data-action="open-import"><svg><use href="#i-upload"/></svg><b>Import BOQ</b></button><button data-view="reports"><svg><use href="#i-download"/></svg><b>Export Reports</b></button><button data-action="report-problem"><svg><use href="#i-alert"/></svg><b>Report a Problem</b></button></div></div>
           </section>
@@ -161,11 +165,11 @@
             <div class="ribbon-group"><span>Revisions</span><div><button data-action="upload-tender-files"><svg><use href="#i-plus"/></svg><b>Add Revision</b></button><button data-action="compare-document-revisions"><svg><use href="#i-history"/></svg><b>Compare</b></button><button data-action="toggle-drawing-overlay"><svg><use href="#i-grid"/></svg><b>Overlay</b></button></div></div>
             <div class="ribbon-group"><span>Model Review</span><div><button data-view="models"><svg><use href="#i-link"/></svg><b>Model Mapping</b></button><button data-action="compare-ifc-revisions"><svg><use href="#i-history"/></svg><b>IFC Compare</b></button><button data-view="quantity_review"><svg><use href="#i-check"/></svg><b>Quantity Review</b></button></div></div>
           </section>
-          <section id="ribbon-panel-dimensions" class="ribbon-panel" role="tabpanel" aria-labelledby="ribbon-tab-dimensions" data-ribbon-panel="dimensions">
+          <section id="ribbon-panel-dimensions" class="ribbon-panel" hidden data-legacy-ribbon-panel="dimensions">
             <div class="ribbon-group"><span>Measuring</span><div><button data-action="measure-length"><svg><use href="#i-ruler"/></svg><b>Length</b></button><button data-action="measure-area"><svg><use href="#i-grid"/></svg><b>Area</b></button><button data-action="measure-perimeter"><b>Perimeter</b></button><button data-action="measure-count"><svg><use href="#i-plus"/></svg><b>Count</b></button><button data-view="quantity_review"><svg><use href="#i-check"/></svg><b>Review</b></button></div></div>
             <div class="ribbon-group"><span>Dimension Groups</span><div><button data-action="add-measurement"><svg><use href="#i-plus"/></svg><b>New Group</b></button><button data-view="drawings"><svg><use href="#i-table"/></svg><b>Dimension View</b></button><button data-view="boq"><svg><use href="#i-link"/></svg><b>Link to BOQ</b></button></div></div>
           </section>
-          <section id="ribbon-panel-revisions" class="ribbon-panel" role="tabpanel" aria-labelledby="ribbon-tab-revisions" data-ribbon-panel="revisions">
+          <section id="ribbon-panel-revisions" class="ribbon-panel" hidden data-legacy-ribbon-panel="revisions">
             <div class="ribbon-group"><span>Version Control</span><div><button data-view="revisions"><svg><use href="#i-history"/></svg><b>Revision Manager</b></button><button data-action="save-revision"><svg><use href="#i-save"/></svg><b>Save Snapshot</b></button><button data-action="revision-impact"><svg><use href="#i-alert"/></svg><b>Impact Check</b></button></div></div>
           </section>
           <section id="ribbon-panel-cost-estimation" class="ribbon-panel" role="tabpanel" aria-labelledby="ribbon-tab-cost-estimation" data-ribbon-panel="cost_estimation">
@@ -185,7 +189,7 @@
             <div class="ribbon-group"><span>Procurement</span><div><button data-view="suppliers"><svg><use href="#i-users"/></svg><b>RFQs &amp; Quotes</b></button><button data-action="add-supplier"><svg><use href="#i-plus"/></svg><b>New Supplier</b></button><button data-action="add-rfq"><svg><use href="#i-upload"/></svg><b>Create RFQ</b></button></div></div>
             <div class="ribbon-group"><span>Commercial</span><div><button data-view="markup"><svg><use href="#i-percent"/></svg><b>Markup</b></button><button data-view="decisions"><svg><use href="#i-grid"/></svg><b>What-If</b></button></div></div>
           </section>
-          <section id="ribbon-panel-intelligence" class="ribbon-panel" role="tabpanel" aria-labelledby="ribbon-tab-intelligence" data-ribbon-panel="intelligence">
+          <section id="ribbon-panel-intelligence" class="ribbon-panel" hidden data-legacy-ribbon-panel="intelligence">
             <div class="ribbon-group"><span>Estimating Intelligence</span><div><button data-action="open-import"><svg><use href="#i-upload"/></svg><b>Smart BOQ Import</b></button><button data-view="boq"><svg><use href="#i-search"/></svg><b>Historical Match</b></button><button data-view="analysis"><svg><use href="#i-calculator"/></svg><b>Rate Assemblies</b></button></div></div>
             <div class="ribbon-group"><span>Control &amp; Scenarios</span><div><button data-view="quality"><svg><use href="#i-check"/></svg><b>Quality Checker</b></button><button data-action="revision-impact"><svg><use href="#i-alert"/></svg><b>Revision Impact</b></button><button data-view="decisions"><svg><use href="#i-percent"/></svg><b>What-If</b></button><button data-view="suppliers"><svg><use href="#i-users"/></svg><b>Bid Leveling</b></button></div></div>
           </section>
@@ -193,7 +197,7 @@
             <div class="ribbon-group"><span>Report Center</span><div><button data-view="reports"><svg><use href="#i-report"/></svg><b>Report Center</b></button><button data-action="export-report-pack"><svg><use href="#i-download"/></svg><b>Submission Pack</b></button><button data-action="export-report-excel"><svg><use href="#i-download"/></svg><b>Export Excel</b></button></div></div>
             <div class="ribbon-group"><span>Review Outputs</span><div><button data-view="quality"><svg><use href="#i-check"/></svg><b>Quality Gate</b></button><button data-view="revisions"><svg><use href="#i-history"/></svg><b>Revision Impact</b></button><button data-view="risks"><svg><use href="#i-alert"/></svg><b>Risks &amp; Gaps</b></button></div></div>
           </section>
-          <section id="ribbon-panel-admin" class="ribbon-panel" role="tabpanel" aria-labelledby="ribbon-tab-admin" data-ribbon-panel="admin">
+          <section id="ribbon-panel-admin" class="ribbon-panel" hidden data-legacy-ribbon-panel="admin">
             <div class="ribbon-group"><span>Administration</span><div><button data-action="backup"><svg><use href="#i-save"/></svg><b>Backup &amp; Restore</b></button><button data-action="report-problem"><svg><use href="#i-alert"/></svg><b>Diagnostics</b></button><button data-view="control"><svg><use href="#i-users"/></svg><b>Team Control</b></button></div></div>
             <div class="ribbon-group"><span>Company</span><div><button data-view="owner_portal"><svg><use href="#i-users"/></svg><b>Owner Portal</b></button><button data-action="register-device"><svg><use href="#i-link"/></svg><b>Register Device</b></button><button data-action="central-health"><svg><use href="#i-check"/></svg><b>Check Central API</b></button></div></div>
           </section>
@@ -220,6 +224,7 @@
     <link rel="stylesheet" href="workbench.css" />
     <script src="auth.js"></script>
     <script src="pdf-reader.js"></script>
+    <script src="tender-intake.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

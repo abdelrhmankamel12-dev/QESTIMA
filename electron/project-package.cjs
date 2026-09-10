@@ -76,6 +76,10 @@ function attachmentCategory(category, fallback = "attachments") {
 function attachmentDescriptors(state = {}) {
   const descriptors = new Map()
   ;(state.projects || []).forEach((project) => {
+    ;(project.tenderIntake || []).forEach((record) => {
+      const attachmentId = record?.source?.attachmentId
+      if (attachmentId) descriptors.set(path.basename(String(attachmentId)), "attachments")
+    })
     ;(project.documents || []).forEach((document) => {
       const attachmentId = document?.attachment?.id
       if (attachmentId) descriptors.set(path.basename(String(attachmentId)), attachmentCategory(document.category))
