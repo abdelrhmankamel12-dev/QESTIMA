@@ -3111,7 +3111,7 @@
       const record = (currentProject().tenderIntake || []).find(r => r.id === target.dataset.id)
       if (!record || record.status !== "pending") return
       const suggestion = C.classifyTenderDocument(record.source.name)
-      openModal("مراجعة التصنيف والإصدار", "اعتماد يدوي قبل توجيه المستند", `<form id="intake-review-form"><input type="hidden" name="id" value="${esc(record.id)}"><p>${esc(record.source.name)} — افتح المصدر وتحقق من بياناته قبل الاعتماد.</p><label>التصنيف<select name="category">${Object.entries(Intake.categories).map(([k,v]) => `<option value="${k}" ${k === record.suggestion.category ? "selected" : ""}>${v}</option>`).join("")}</select></label><label>رقم المستند<input name="documentNumber" value="${esc(suggestion.documentNumber)}" required></label><label>الإصدار<input name="revision" value="${esc(suggestion.revision)}" required></label><label>التخصص<select name="discipline">${C.DISCIPLINES.map(d => `<option>${esc(d)}</option>`).join("")}</select></label><label>يحل محل إصدار سابق؟<select name="supersedes"><option value="">مستند جديد</option>${currentProject().documents.filter(d => d.status !== "superseded").map(d => `<option value="${esc(d.id)}">${esc(d.documentNumber)} — Rev ${esc(d.revision)}</option>`).join("")}</select></label><p>اعتماد إصدار بديل يغيّر المرجع الحالي فقط؛ لا يعدّل قياسات أو أسعارًا سابقة.</p><button class="primary-btn" type="submit">اعتماد التصنيف</button></form>`)
+      openModal("مراجعة التصنيف والإصدار", "اعتماد يدوي قبل توجيه المستند", `<form id="intake-review-form"><input type="hidden" name="recordId" value="${esc(record.id)}"><p>${esc(record.source.name)} — افتح المصدر وتحقق من بياناته قبل الاعتماد.</p><label>التصنيف<select name="category">${Object.entries(Intake.categories).map(([k,v]) => `<option value="${k}" ${k === record.suggestion.category ? "selected" : ""}>${v}</option>`).join("")}</select></label><label>رقم المستند<input name="documentNumber" value="${esc(suggestion.documentNumber)}" required></label><label>الإصدار<input name="revision" value="${esc(suggestion.revision)}" required></label><label>التخصص<select name="discipline">${C.DISCIPLINES.map(d => `<option>${esc(d)}</option>`).join("")}</select></label><label>يحل محل إصدار سابق؟<select name="supersedes"><option value="">مستند جديد</option>${currentProject().documents.filter(d => d.status !== "superseded").map(d => `<option value="${esc(d.id)}">${esc(d.documentNumber)} — Rev ${esc(d.revision)}</option>`).join("")}</select></label><p>اعتماد إصدار بديل يغيّر المرجع الحالي فقط؛ لا يعدّل قياسات أو أسعارًا سابقة.</p><button class="primary-btn" type="submit">اعتماد التصنيف</button></form>`)
       return
     }
     const project = currentProject()
@@ -3961,7 +3961,7 @@
       if (!form.reportValidity()) return
       const values = formObject(form)
       try {
-        const reviewed = Intake.approve(currentProject(), values.id, values, C.activeUser(state)?.id || "local", new Date().toISOString())
+        const reviewed = Intake.approve(currentProject(), values.recordId, values, C.activeUser(state)?.id || "local", new Date().toISOString())
         const saved = commit("اعتماد تصنيف مستند وإصداره", () => { Object.assign(currentProject(), reviewed) })
         if (saved !== false) { closeModal(); openView("tender_ai"); await saveNow() }
       } catch (error) {
