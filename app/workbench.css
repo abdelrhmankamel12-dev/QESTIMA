@@ -80,3 +80,77 @@
 .focus-edition #project-form .field:has([name="workflowMode"]) { display: none; }
 .focus-edition .contextual-tabs { display: none; }
 .focus-edition .toast-stack { max-width: 300px; }
+
+/* Contextual project navigator: the left edge stays fixed in Arabic and English. */
+.sidebar { position: relative; min-height: 0; }
+.focus-edition .main-nav { flex: 0 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; padding: 4px 8px; }
+.focus-edition .main-nav button { display: flex; justify-content: flex-start; min-height: 32px; padding: 5px; font-size: 11px; }
+.focus-edition .main-nav button b { display: none; }
+.project-navigator { display: flex; flex-direction: column; flex: 1; min-height: 100px; padding: 8px 12px; overflow: hidden; }
+.project-navigator header { font-size: 13px; padding: 6px 0; }
+#navigator-search { width: 100%; min-height: 32px; margin-bottom: 8px; background: #ffffff12; border: 1px solid #ffffff35; border-radius: 5px; color: #fff; padding: 5px 8px; }
+#navigator-search::placeholder { color: #bacbd0; }
+#navigator-tree { overflow-y: auto; min-height: 0; scrollbar-width: thin; }
+#navigator-tree summary { cursor: pointer; padding: 8px 0; font-size: 12px; overflow-wrap: anywhere; }
+#navigator-tree small { color: #a4c7cc; margin-inline-start: 6px; }
+.navigator-node { display: block; width: 100%; border: 0; border-radius: 4px; background: transparent; color: #dce8e9; text-align: start; padding: 7px 10px; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+.navigator-node:hover, .navigator-node.active { background: #177a7466; color: #fff; }
+.navigator-node:focus-visible, #navigator-tree summary:focus-visible { outline: 2px solid #6cdbcb; outline-offset: -2px; }
+.navigator-node:disabled { opacity: .5; cursor: default; }
+.navigator-empty, #navigator-tree p { font-size: 12px; line-height: 1.7; color: #b7c7ce; }
+.navigator-resize { position: absolute; top: 0; right: -3px; width: 7px; height: 100%; cursor: col-resize; z-index: 40; touch-action: none; }
+.navigator-resize:hover, .navigator-resize:focus-visible { background: #13a99c; outline: 0; }
+@media print { .project-navigator, .navigator-resize { display: none; } }
+
+/* Neutral desktop estimating palette. Reference: RIB Candy; original QESTIMA styling. */
+@media screen {
+  :root:not([data-theme="dark"]) {
+    --bg: #e7e8ea; --surface: #ffffff; --surface-2: #f3f3f3; --surface-3: #e8eaed;
+    --ink: #20252b; --muted: #58616c; --line: #c7cbd0; --line-strong: #9aa2ab;
+    --teal: #315f92; --teal-2: #426fa2; --teal-soft: #e3edf9;
+    --navy: #34404f; --navy-2: #465363; --shadow: none; --radius: 3px;
+    --qe-accent: #315f92; --qe-chrome: #e3e5e8; --qe-chrome-2: #d4deeb;
+    --qe-app: #e7e8ea; --qe-paper: #ffffff; --qe-paper-2: #f1f2f3;
+    --qe-text: #20252b; --qe-muted: #58616c; --qe-line: #c7cbd0;
+  }
+  [data-theme="dark"] { --qe-accent: #8cb8ea; --teal: #8cb8ea; --teal-soft: #293e55; }
+  .sidebar, .sidebar .brand, .topbar, .ribbon-tabs { background: var(--qe-chrome); color: var(--qe-text); border-color: var(--qe-line); }
+  .sidebar .brand span, .sidebar .eyebrow, .sidebar small, .sidebar .workspace-mini, .sidebar .project-mini, .sidebar .main-nav button, .topbar .ghost-btn, .topbar .breadcrumb, .topbar .breadcrumb span { color: var(--qe-muted); }
+  .sidebar .workspace-mini, .sidebar .project-mini { background: var(--qe-paper-2); border: 1px solid var(--qe-line); box-shadow: none; }
+  .sidebar select, #navigator-search { background: var(--qe-paper); color: var(--qe-text); border: 1px solid var(--qe-line); }
+  #navigator-search::placeholder { color: var(--qe-muted); }
+  .sidebar .brand-mark { background: #984340; color: #fff; }
+  .sidebar .main-nav button.active { background: var(--teal-soft); color: var(--qe-text); box-shadow: inset 3px 0 var(--qe-accent); }
+  .sidebar .main-nav button:hover { background: var(--qe-paper); color: var(--qe-text); }
+  .sidebar .project-progress { background: var(--qe-line); }
+  .sidebar .project-progress span { background: var(--qe-accent); }
+  .sidebar-foot { border-top: 1px solid var(--qe-line); background: var(--qe-paper-2); }
+  #navigator-tree, .navigator-node { color: var(--qe-text); }
+  #navigator-tree small, #navigator-tree p { color: var(--qe-muted); }
+  .navigator-node:hover, .navigator-node.active { background: var(--teal-soft); color: var(--qe-text); }
+  .navigator-resize:hover, .navigator-resize:focus-visible { background: var(--qe-accent); }
+  .topbar .global-search { background: var(--qe-paper); color: var(--qe-text); border: 1px solid var(--qe-line); }
+  .topbar .global-search input { color: var(--qe-text); }
+  .topbar .global-search input::placeholder { color: var(--qe-muted); }
+  .ribbon-tab { color: var(--qe-text); }
+  .ribbon-tab:hover, .ribbon-tab.active { background: var(--qe-paper); color: var(--qe-text); }
+  .ribbon-panel .ribbon-group button svg { color: var(--qe-accent); }
+  .primary-btn, .secondary-btn, .ghost-btn, .card, .kpi-card, .modal, .page-actions button { border-radius: 3px; box-shadow: none; }
+  .primary-btn { background: var(--teal); color: #fff; border: 1px solid var(--teal); }
+  .secondary-btn { background: var(--qe-paper-2); color: var(--qe-text); border: 1px solid var(--qe-line); }
+  .project-center-head, .report-hero, .submission-pack-hero, .model-banner, .owner-hero, .control-hero, .quality-score-panel { background: var(--qe-paper); box-shadow: none; border-color: var(--qe-line); }
+  .data-table { border-collapse: collapse; }
+  .data-table th, .pricing-grid thead th { background: var(--qe-paper-2); color: var(--qe-text); border: 1px solid var(--qe-line); font-weight: 600; }
+  .data-table td { border: 1px solid var(--qe-line); }
+  .data-table tbody tr:nth-child(even) td { background: var(--qe-paper-2); }
+  .data-table tbody tr:hover td { background: var(--teal-soft); }
+  .pricing-grid tbody tr.active-row td { background: var(--teal-soft); }
+  .data-table input, .data-table select { color: var(--qe-text); }
+  .data-table input:focus { outline: 2px solid var(--qe-accent); outline-offset: -2px; box-shadow: none; }
+  .inspector-head, .cost-ladder > header, .sheet-title { background: var(--qe-paper-2); color: var(--qe-text); border-color: var(--qe-line); }
+  .cost-ladder > footer, .total-row.final { background: var(--teal-soft); color: var(--qe-text); }
+  .cost-ladder > footer span, .cost-ladder > footer strong { color: var(--qe-text); }
+  .open-edition-label { background: var(--qe-paper-2); color: var(--qe-muted); border: 1px solid var(--qe-line); border-radius: 3px; }
+  .kpi-card { padding: 8px 12px; border: 1px solid var(--qe-line); background: var(--qe-paper); }
+  .kpi-card strong { font-size: 18px; color: var(--qe-text); }
+}

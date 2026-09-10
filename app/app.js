@@ -149,6 +149,8 @@
   let activeReportTab = "managementSummary"
   let reportLanguage = "ar"
   let intakeCategory = "all"
+  let navigatorLayout = { width: 230, hidden: false, groups: {} }
+  let navigatorSearch = ""
   let inspectorHidden = true
   let ribbonCollapsed = false
   let workspaceScroll = {}
@@ -403,6 +405,7 @@
   function persistUiState() {
     if (!state) return
     state.uiState ||= {}
+    state.uiState.navigator = C.deepClone(navigatorLayout)
     state.uiState.activeView = activeView
     state.uiState.activeRibbonTab = activeRibbonTab
     state.uiState.activeContextTab = activeContextTab
@@ -418,6 +421,7 @@
 
   function restoreUiState() {
     const saved = state?.uiState || {}
+    navigatorLayout = { width: Math.max(190, Math.min(380, Number(saved.navigator?.width) || 230)), hidden: saved.navigator?.hidden === true, groups: saved.navigator?.groups || {} }
     const savedTabs = Array.isArray(saved.openTabs) ? saved.openTabs.filter((view) => viewTitles[view]) : []
     openTabs = unique(savedTabs.length ? savedTabs : ["projects"])
     activeView = viewTitles[saved.activeView] ? saved.activeView : openTabs[0] || "projects"
@@ -573,6 +577,7 @@
 
   function openView(view) {
     if (!viewTitles[view]) return
+    if (view !== activeView) { navigatorSearch = ""; if ($("#navigator-search")) $("#navigator-search").value = "" }
     activeView = view
     activeContextTab = ""
     if (view === "drawings" && !activeDrawingId) drawingClosed = false
@@ -709,18 +714,92 @@
   function renderOpenNavigation() {
     if (!state.settings.openEdition) return
     document.body?.classList.add("open-edition", "focus-edition")
-    const labels = { projects: "المشروعات", documents: "سجل المستندات", boq: "جدول الكميات والتسعير", quantity_review: "اعتماد كميات الحصر", drawings: "الرسومات والحصر", analysis: "تحليل الأسعار", resources: "مكتبة الموارد", suppliers: "أسعار الموردين", markup: "الإضافات والربح", reports: "تقارير الحصر والتسعير" }
+    const labels = { projects: "HOME", tender_ai: "TENDER AI", boq: "ESTIMATION", drawings: "DRAWING", suppliers: "SUPPLIER", reports: "REPORTS" }
     $$("#main-nav [data-view]").forEach(button => {
       const label = labels[button.dataset.view]
       button.hidden = !label
       if (label) { const span = button.querySelector("span"); if (span) span.textContent = label }
     })
-    $$("#main-nav .nav-section").forEach((node, index) => { node.textContent = ["المشروع", "", "الحصر والتسعير", "الإخراج"][index] || ""; node.hidden = index === 1 })
+    $$("#main-nav .nav-section").forEach((node, index) => { node.textContent = ["المشروع", "", "الحصر والتسعير", "الإخراج"][index] || ""; node.hidden = true })
     $$('#main-nav [data-action="report-problem"], [data-action="logout"], [data-action="reactivate-license"], #ribbon-tab-admin').forEach(button => { button.hidden = true })
+  }
+
+  function renderProjectNavigator() {
+    const host = $("#navigator-tree")
+    if (!host) return
+    const project = currentProject(), q = navigatorSearch.trim().toLocaleLowerCase()
+    const matches = value => !q || String(value || "").toLocaleLowerCase().includes(q)
+    const button = (text, attrs, active = false) => `<button class="navigator-node ${active ? "active" : ""}" ${attrs} title="${esc(text)}">${esc(text)}</button>`
+    const groups = new Map()
+    const add = (name, node) => { if (!groups.has(name)) groups.set(name, []); groups.get(name).push(node) }
+    let title = "أدوات المشروع"
+    if (["boq", "analysis", "quantity_review", "markup", "resources"].includes(activeView)) {
+      title = "أقسام وبنود المقايسة"
+      for (const item of project.boq || []) {
+        const label = `${item.itemNo || ""} — ${item.description || ""}`
+        if (matches(`${item.section || ""} ${label}`)) add(item.section || "بدون قسم", button(label, `data-action="navigator-item" data-id="${esc(item.id)}"`, item.id === activeItemId))
+      }
+    } else if (["drawings", "models"].includes(activeView)) {
+      title = "الرسومات المعتمدة"
+      for (const doc of project.documents || []) {
+        if (doc.category !== "drawings" || doc.status === "superseded") continue
+        const label = `${doc.documentNumber || doc.title || doc.originalName} · Rev ${doc.revision || "—"}`
+        if (matches(`${doc.discipline || ""} ${label}`)) add(doc.discipline || "عام", button(label, `data-action="select-drawing" data-id="${esc(doc.id)}"`, doc.id === activeDrawingId))
+      }
+    } else if (["tender_ai", "documents", "tender_review", "risks", "scope"].includes(activeView)) {
+      title = "مستندات المناقصة"
+      for (const record of project.tenderIntake || []) if (record.status === "pending" && matches(record.source.name)) add("بانتظار المراجعة", button(record.source.name, `data-action="intake-review" data-id="${esc(record.id)}"`))
+      for (const doc of project.documents || []) {
+        if (doc.status === "superseded" || !matches(`${doc.documentNumber || ""} ${doc.title || doc.originalName}`)) continue
+        add(Intake?.categories[doc.category] || doc.category || "مستندات", button(`${doc.documentNumber || ""} — ${doc.title || doc.originalName}`, doc.attachment?.id ? `data-action="open-document" data-id="${esc(doc.attachment.id)}"` : "disabled"))
+      }
+    } else {
+      const links = activeView === "suppliers" ? [["suppliers", "عروض الموردين والمقارنة"], ["resources", "مكتبة الموارد"], ["analysis", "تحليل سعر البند"]] : activeView === "reports" ? [["reports", "تقارير المشروع"], ["quality", "فحص اكتمال التسعير"], ["quantity_review", "مراجعة الكميات"]] : [["tender_ai", "رفع ومراجعة مستندات المناقصة"], ["boq", "إدخال الكميات والتسعير"], ["drawings", "الحصر من الرسومات"], ["suppliers", "مقارنة عروض الموردين"], ["reports", "إخراج التقارير"]]
+      for (const [view, label] of links) if (matches(label)) add("خطوات العمل", button(label, `data-view="${view}"`))
+    }
+    $("#navigator-title").textContent = title
+    host.innerHTML = [...groups].map(([name, nodes]) => {
+      const key = JSON.stringify([project.id, title, name]), closed = navigatorLayout.groups[key] === true
+      return `<details data-navigator-group="${esc(key)}" ${closed ? "" : "open"}><summary>${esc(name)} <small>${nodes.length}</small></summary>${nodes.slice(0, 200).join("")}${nodes.length > 200 ? '<p>أول 200 نتيجة؛ استخدم البحث للوصول إلى باقي البنود.</p>' : ""}</details>`
+    }).join("") || `<p class="navigator-empty">${q ? "لا توجد نتائج مطابقة." : "لا توجد عناصر بعد. استخدم أدوات الشريط العلوي للإضافة."}</p>`
+    $$("details[data-navigator-group]", host).forEach(node => node.addEventListener("toggle", () => {
+      navigatorLayout.groups[node.dataset.navigatorGroup] = !node.open
+      persistUiState(); scheduleSave()
+    }))
+    const shell = $("#app-shell")
+    shell?.style?.setProperty?.("--sidebar", `${navigatorLayout.width}px`)
+    shell?.classList.toggle("navigator-hidden", navigatorLayout.hidden)
+    $("#navigator-resize")?.setAttribute?.("aria-valuenow", String(navigatorLayout.width))
+    $$('[data-action="toggle-navigator"]').forEach(node => node.setAttribute?.("aria-expanded", String(!navigatorLayout.hidden)))
+  }
+
+  function bindProjectNavigator() {
+    $("#navigator-search")?.addEventListener("input", event => { navigatorSearch = event.target.value; renderProjectNavigator() })
+    const handle = $("#navigator-resize")
+    const setWidth = value => {
+      navigatorLayout.width = Math.max(190, Math.min(380, Math.round(value)))
+      $("#app-shell")?.style?.setProperty?.("--sidebar", `${navigatorLayout.width}px`)
+      handle?.setAttribute?.("aria-valuenow", String(navigatorLayout.width))
+    }
+    handle?.addEventListener("keydown", event => {
+      if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return
+      event.preventDefault()
+      setWidth(event.key === "Home" ? 190 : event.key === "End" ? 380 : navigatorLayout.width + (event.key === "ArrowRight" ? 10 : -10))
+      persistUiState(); scheduleSave()
+    })
+    handle?.addEventListener("pointerdown", event => {
+      if (event.button !== 0) return
+      event.preventDefault(); handle.setPointerCapture(event.pointerId)
+      const start = event.clientX, width = navigatorLayout.width
+      const move = e => setWidth(width + e.clientX - start)
+      const stop = () => { handle.removeEventListener("pointermove", move); handle.removeEventListener("pointerup", stop); handle.removeEventListener("pointercancel", stop); persistUiState(); scheduleSave() }
+      handle.addEventListener("pointermove", move); handle.addEventListener("pointerup", stop); handle.addEventListener("pointercancel", stop)
+    })
   }
 
   function renderShell() {
     renderOpenNavigation()
+    renderProjectNavigator()
     const project = currentProject()
     const health = C.projectHealth(project, state.resources)
     const tender = C.tenderHealth(project, state.resources)
@@ -3124,7 +3203,7 @@
       return
     }
     if (action === "ribbon-unavailable") return toast("الأداة غير متاحة بعد", target.title || "سيتم تفعيلها في محرك الرسم القادم.", "warning")
-    if (action === "toggle-navigator") { $("#app-shell").classList.toggle("navigator-hidden"); return }
+    if (action === "toggle-navigator") { navigatorLayout.hidden = !navigatorLayout.hidden; renderProjectNavigator(); persistUiState(); scheduleSave(); return }
     if (action === "model-page-prev" || action === "model-page-next") { modelPage = Math.max(0, modelPage + (action === "model-page-next" ? 1 : -1)); render(); return }
     if (action === "reset-ribbon") { ribbonHiddenCommands = []; ribbonLayout = {}; persistUiState(); renderRibbon(); scheduleSave(); toast("تمت استعادة الـRibbon", "ظهرت كل الأوامر وعاد حجم المجموعات الافتراضي."); return }
     if (action === "save-now") { await saveNow(); toast("تم حفظ البيانات", "آخر حالة للمشروع محفوظة."); return }
@@ -3265,6 +3344,15 @@
       closeModal()
       openView("drawings")
       scheduleSave()
+      return
+    }
+    if (action === "navigator-item") {
+      if (!project.boq.some(item => item.id === target.dataset.id)) return
+      activeItemId = target.dataset.id
+      Object.assign(filters, { boqSearch: "", section: "", system: "", floor: "", pricing: "" })
+      openView("boq")
+      const input = $$('input[data-boq-id][data-field="description"]').find(node => node.dataset.boqId === activeItemId)
+      input?.scrollIntoView?.({ block: "center", inline: "nearest" }); input?.focus?.()
       return
     }
     if (action === "select-drawing") {
@@ -4375,6 +4463,7 @@
     document.addEventListener("change", handleChange)
     document.addEventListener("submit", handleSubmit)
     bindStaticNavigation()
+    bindProjectNavigator()
     $("#undo-btn").addEventListener("click", undo)
     $("#redo-btn").addEventListener("click", redo)
     $("#theme-btn").addEventListener("click", () => commit("تغيير مظهر البرنامج", () => { state.settings.theme = state.settings.theme === "dark" ? "light" : "dark" }, { audit: false }))

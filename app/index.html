@@ -77,6 +77,7 @@
         </div>
 
         <nav id="main-nav" class="main-nav">
+          <button data-view="tender_ai"><svg><use href="#i-attach"/></svg><span>TENDER AI</span></button>
           <span class="nav-section">PROJECT</span>
           <button data-view="projects" class="active"><svg><use href="#i-folder"/></svg><span>Projects Center</span></button>
           <button data-view="dashboard"><svg><use href="#i-grid"/></svg><span>Project Overview</span></button>
@@ -104,6 +105,12 @@
           <button data-action="report-problem"><svg><use href="#i-alert"/></svg><span>Report a Problem</span></button>
         </nav>
 
+        <section id="project-navigator" class="project-navigator" aria-label="محتويات المشروع">
+          <header><strong id="navigator-title">المشروع</strong></header>
+          <input id="navigator-search" type="search" placeholder="بحث داخل الشجرة…" aria-label="بحث داخل شجرة المشروع" />
+          <div id="navigator-tree"></div>
+        </section>
+        <div id="navigator-resize" class="navigator-resize" role="separator" tabindex="0" aria-label="تغيير عرض شجرة المشروع" aria-orientation="vertical" aria-valuemin="190" aria-valuemax="380" aria-valuenow="230"></div>
         <div class="sidebar-foot">
           <div class="save-state"><span id="save-dot"></span><div><strong id="save-label">محفوظ</strong><small id="save-time">تلقائيًا على جهازك</small></div></div>
           <span class="version">Tender Operating System · v0.15.0</span>
