@@ -47,7 +47,7 @@ async function main() {
     assert.equal(await page.locator('[data-report-tab="pricedBoq"]').getAttribute("class"), "active")
     await page.locator('#ribbon-tab-tender-ai').click()
     await page.locator('#ribbon-panel-tender-ai [data-command-id="tender-intake"]').click()
-    await page.locator('[data-action="intake-review"][data-id="intake-browser-contract"]').click()
+    await page.locator('#workspace [data-action="intake-review"][data-id="intake-browser-contract"]').click()
     const review = page.locator('#intake-review-form')
     await review.locator('[name="documentNumber"]').fill('BROWSER-CONTRACT-001')
     await review.locator('[name="revision"]').fill('0')
