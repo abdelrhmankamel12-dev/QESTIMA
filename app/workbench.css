@@ -154,3 +154,10 @@
   .kpi-card { padding: 8px 12px; border: 1px solid var(--qe-line); background: var(--qe-paper); }
   .kpi-card strong { font-size: 18px; color: var(--qe-text); }
 }
+@media screen {
+  .sidebar .brand strong, .sidebar .save-state strong, .topbar .breadcrumb strong { color: var(--qe-text); }
+  .topbar .icon-btn, .topbar .secondary-btn, .topbar .ghost-btn { color: var(--qe-text); background: var(--qe-paper-2); border-color: var(--qe-line); }
+  .topbar .icon-btn:hover, .topbar .secondary-btn:hover, .topbar .ghost-btn:hover { color: var(--qe-text); background: var(--teal-soft); border-color: var(--qe-accent); }
+  .topbar button:disabled { opacity: .4; }
+  [data-theme="dark"] .primary-btn { color: #172129; }
+}
